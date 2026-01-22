@@ -1,15 +1,37 @@
 export const errorHandler = (err, req, res, next) => {
-  console.error("Error:", err);
+  // Log error for debugging
+  console.error("Error occurred:", {
+    message: err.message,
+    stack: err.stack,
+    path: req.path,
+    method: req.method,
+  });
 
-  const statusCode = err.statusCode || 500;
+  // Ensure statusCode is valid
+  const statusCode =
+    err.statusCode && err.statusCode >= 400 && err.statusCode < 600
+      ? err.statusCode
+      : 500;
+
   const message = err.message || "Internal Server Error";
 
-  res.status(statusCode).json({
+  // Check if headers have already been sent
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  // Send error response
+  return res.status(statusCode).json({
     success: false,
     error: {
       message,
-      ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
+      code: err.code || "INTERNAL_ERROR",
+      ...(process.env.NODE_ENV === "development" && {
+        stack: err.stack,
+        details: err.details,
+      }),
     },
+    timestamp: new Date().toISOString(),
   });
 };
 

@@ -25,11 +25,13 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-const uploadDir = path.join(__dirname, "../uploads");
-import fs from "fs";
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+// Upload directory is not needed for Vercel serverless
+// Files are processed in memory using multer.memoryStorage()
+// const uploadDir = path.join(__dirname, "../uploads");
+// import fs from "fs";
+// if (!fs.existsSync(uploadDir)) {
+//   fs.mkdirSync(uploadDir, { recursive: true });
+// }
 
 app.use("/api", vikorRoutes);
 
