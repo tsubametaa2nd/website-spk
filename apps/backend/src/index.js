@@ -14,8 +14,23 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+const allowedOrigins = [
+  "http://localhost:4321",
+  "https://website-spk-web.vercel.app",
+  process.env.CORS_ORIGIN,
+].filter(Boolean);
+
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || "http://localhost:4321",
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked origin: ${origin}`);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
@@ -24,15 +39,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-
-// Upload directory is not needed for Vercel serverless
-// Files are processed in memory using multer.memoryStorage()
-// const uploadDir = path.join(__dirname, "../uploads");
-// import fs from "fs";
-// if (!fs.existsSync(uploadDir)) {
-//   fs.mkdirSync(uploadDir, { recursive: true });
-// }
-
 app.use("/api", vikorRoutes);
 
 app.get("/health", (req, res) => {
@@ -61,10 +67,8 @@ app.get("/", (req, res) => {
 
 app.use(errorHandler);
 
-// Export app for Vercel serverless
 export default app;
 
-// Start server only if not in Vercel (serverless) environment
 if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`
