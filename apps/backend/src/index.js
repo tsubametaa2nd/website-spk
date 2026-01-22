@@ -15,8 +15,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 const allowedOrigins = [
-  "http://localhost:4321",
-  "http://localhost:3000",
+  // "http://localhost:4321",
   "https://website-spk-web.vercel.app",
   process.env.CORS_ORIGIN,
 ].filter(Boolean);
