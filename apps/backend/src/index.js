@@ -20,10 +20,15 @@ app.use(
       "http://localhost:3000",
       "http://localhost:4321",
       "http://127.0.0.1:4321",
-      "https://website-spk-web.vercel.app/",
-      process.env.CORS_ORIGIN,
+      "https://website-spk-web.vercel.app", // Removed trailing slash
     ],
-    methods: ["GET", "POST", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+    ],
     credentials: true,
   }),
 );
