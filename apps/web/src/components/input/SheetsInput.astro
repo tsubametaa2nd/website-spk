@@ -1,0 +1,325 @@
+---
+interface Props {
+  id?: string;
+}
+
+const { id = 'sheets-input' } = Astro.props;
+---
+
+<div class="card-elevated mb-8" id={id}>
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center">
+      <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    </div>
+    <div>
+      <h2 class="text-lg font-semibold text-primary-900">Import dari Google Sheets</h2>
+      <p class="text-sm text-secondary-500">Ambil data siswa dan jarak langsung dari spreadsheet</p>
+    </div>
+  </div>
+
+  <div class="space-y-4">
+    <div>
+      <label class="label" for="google-sheet-id">ID Spreadsheet atau URL</label>
+      <input 
+        type="text" 
+        id="google-sheet-id" 
+        class="input" 
+        placeholder="Masukkan ID Spreadsheet atau URL lengkap..."
+      />
+      <p class="text-xs text-secondary-400 mt-1">
+        Contoh ID: <code class="bg-secondary-100 px-1 rounded">1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms</code>
+      </p>
+    </div>
+
+    <div id="sheets-validation" class="hidden">
+      <div class="p-4 rounded-lg border" id="sheets-status">
+      </div>
+    </div>
+
+    <div class="flex gap-3">
+      <button id="btn-validate-sheets" class="btn-secondary flex-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Validasi Koneksi
+      </button>
+      <button id="btn-fetch-sheets" class="btn-primary flex-1" disabled>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+        </svg>
+        Ambil Data & Proses VIKOR
+      </button>
+    </div>
+
+    <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+      <h4 class="font-medium text-blue-800 mb-2 flex items-center gap-2">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+        </svg>
+        Struktur Spreadsheet yang Diharapkan
+      </h4>
+      <div class="space-y-2 text-sm text-blue-700">
+        <div class="p-2 bg-white rounded border border-blue-100">
+          <strong class="text-blue-800">Sheet "Kriteria":</strong>
+          <code class="block mt-1 text-xs">No | Nama | C1 | C2 | C3 | C4 | C5</code>
+          <span class="text-xs text-blue-500">C1: Akumulasi Nilai, C2: Sikap, C4: Sertifikasi, C5: Rekomendasi</span>
+        </div>
+        <div class="p-2 bg-white rounded border border-blue-100">
+          <strong class="text-blue-800">Sheet "Jarak":</strong>
+          <code class="block mt-1 text-xs">No | Nama | Bank 1 | Bank 2 | Bank 3 | ...</code>
+          <span class="text-xs text-blue-500">Jarak masing-masing siswa ke setiap bank/tempat magang (dalam KM)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sheets-preview" class="mt-6 hidden">
+    <h4 class="font-medium text-secondary-700 mb-3">Preview Data dari Spreadsheet</h4>
+    
+    <div class="mb-4">
+      <h5 class="text-sm font-medium text-secondary-600 mb-2">Data Siswa (Kriteria)</h5>
+      <div class="table-container max-h-48 overflow-y-auto">
+        <table class="table" id="sheets-student-table">
+          <thead>
+            <tr>
+              <th>Nama</th>
+              <th>C1</th>
+              <th>C2</th>
+              <th>C4</th>
+              <th>C5</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div>
+      <h5 class="text-sm font-medium text-secondary-600 mb-2">Alternatif (Tempat Magang)</h5>
+      <div class="table-container max-h-48 overflow-y-auto">
+        <table class="table" id="sheets-alt-table">
+          <thead>
+            <tr>
+              <th>Kode</th>
+              <th>Nama Bank/Tempat</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    
+    <p id="sheets-count" class="text-sm text-secondary-500 mt-2"></p>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const sheetIdInput = document.getElementById('google-sheet-id') as HTMLInputElement;
+    const validateBtn = document.getElementById('btn-validate-sheets') as HTMLButtonElement;
+    const fetchBtn = document.getElementById('btn-fetch-sheets') as HTMLButtonElement;
+    const validationDiv = document.getElementById('sheets-validation');
+    const statusDiv = document.getElementById('sheets-status');
+    const previewDiv = document.getElementById('sheets-preview');
+    
+    const API_URL = window.API_URL || 'http://localhost:3001';
+    
+    function extractSheetId(input: string): string {
+      if (!input) return '';
+      
+      const match = input.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      if (match) return match[1];
+      
+      return input.trim();
+    }
+    
+    validateBtn?.addEventListener('click', async () => {
+      const sheetId = extractSheetId(sheetIdInput?.value || '');
+      
+      if (!sheetId) {
+        showStatus('error', 'Masukkan ID Spreadsheet atau URL');
+        return;
+      }
+      
+      try {
+        validateBtn.textContent = 'Memvalidasi...';
+        validateBtn.disabled = true;
+        
+        const res = await fetch(`${API_URL}/api/sheets/validate?sheetId=${encodeURIComponent(sheetId)}`);
+        const data = await res.json();
+        
+        if (data.success) {
+          const { spreadsheetTitle, hasKriteria, hasJarak, sheets } = data.data;
+          
+          let statusHtml = `
+            <div class="flex items-center gap-2 mb-2">
+              <svg class="w-5 h-5 text-success-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              <span class="font-medium text-success-700">Koneksi berhasil!</span>
+            </div>
+            <p class="text-sm text-secondary-600 mb-2">Spreadsheet: <strong>${spreadsheetTitle}</strong></p>
+            <div class="flex flex-wrap gap-2">
+          `;
+          
+          sheets.forEach((sheet: string) => {
+            const isRequired = sheet === 'Kriteria' || sheet === 'Jarak';
+            const isPresent = (sheet === 'Kriteria' && hasKriteria) || (sheet === 'Jarak' && hasJarak);
+            statusHtml += `
+              <span class="px-2 py-1 text-xs rounded-full ${isRequired ? (isPresent ? 'bg-success-100 text-success-700' : 'bg-error-100 text-error-700') : 'bg-secondary-100 text-secondary-600'}">
+                ${sheet} ${isRequired ? (isPresent ? '✓' : '✗') : ''}
+              </span>
+            `;
+          });
+          
+          statusHtml += '</div>';
+          
+          if (!hasKriteria || !hasJarak) {
+            statusHtml += `
+              <div class="mt-3 p-2 bg-warning-50 rounded text-sm text-warning-700">
+                Pastikan spreadsheet memiliki sheet bernama "Kriteria" dan "Jarak"
+              </div>
+            `;
+          }
+          
+          showStatus('success', statusHtml);
+          
+          if (hasKriteria && hasJarak) {
+            fetchBtn.disabled = false;
+          }
+        } else {
+          showStatus('error', data.error?.message || 'Gagal memvalidasi koneksi');
+        }
+      } catch (err: any) {
+        showStatus('error', `Error: ${err.message}`);
+      } finally {
+        validateBtn.textContent = 'Validasi Koneksi';
+        validateBtn.disabled = false;
+      }
+    });
+    
+    fetchBtn?.addEventListener('click', async () => {
+      const sheetId = extractSheetId(sheetIdInput?.value || '');
+      
+      if (!sheetId) {
+        showStatus('error', 'Masukkan ID Spreadsheet atau URL');
+        return;
+      }
+      
+      try {
+        fetchBtn.textContent = 'Mengambil data...';
+        fetchBtn.disabled = true;
+        
+        const completeRes = await fetch(`${API_URL}/api/sheets/complete?sheetId=${encodeURIComponent(sheetId)}`);
+        const completeData = await completeRes.json();
+        
+        if (!completeData.success) {
+          throw new Error(completeData.error?.message || 'Gagal mengambil data');
+        }
+        
+        const { students, alternatives } = completeData.data;
+        
+        renderSheetsPreview(students, alternatives);
+        
+        if (window.AppState) {
+          window.AppState.setStudentData(students);
+          window.AppState.setDudiData(alternatives.map((alt: any, idx: number) => ({
+            ...alt,
+            jarak: 0
+          })));
+          
+          window.GoogleSheetId = sheetId;
+          window.JarakPerSiswa = completeData.data.jarakPerSiswa;
+        }
+        
+        showStatus('success', `
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-success-500" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span class="font-medium text-success-700">
+              Data berhasil diambil! ${students.length} siswa, ${alternatives.length} alternatif
+            </span>
+          </div>
+          <p class="text-sm text-secondary-600 mt-2">
+            Silakan atur bobot kriteria dan klik "Proses Perhitungan VIKOR" di bawah.
+          </p>
+        `);
+        
+      } catch (err: any) {
+        showStatus('error', `Error: ${err.message}`);
+      } finally {
+        fetchBtn.textContent = 'Ambil Data & Proses VIKOR';
+        fetchBtn.disabled = false;
+      }
+    });
+    
+    function showStatus(type: 'success' | 'error', content: string) {
+      if (validationDiv && statusDiv) {
+        validationDiv.classList.remove('hidden');
+        statusDiv.className = `p-4 rounded-lg border ${type === 'success' ? 'bg-success-50 border-success-200' : 'bg-error-50 border-error-200'}`;
+        statusDiv.innerHTML = type === 'error' ? `
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-error-500" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+            <span class="text-error-700">${content}</span>
+          </div>
+        ` : content;
+      }
+    }
+    
+    function renderSheetsPreview(students: any[], alternatives: any[]) {
+      const studentTbody = document.querySelector('#sheets-student-table tbody');
+      if (studentTbody) {
+        studentTbody.innerHTML = students.slice(0, 10).map(s => `
+          <tr>
+            <td>${s.nama}</td>
+            <td class="${s.c1 < 70 ? 'text-error-500 font-medium' : ''}">${s.c1}</td>
+            <td>${s.c2}</td>
+            <td class="${s.c4 < 70 ? 'text-error-500 font-medium' : ''}">${s.c4}</td>
+            <td>${s.c5}</td>
+          </tr>
+        `).join('');
+        
+        if (students.length > 10) {
+          studentTbody.innerHTML += `<tr><td colspan="5" class="text-center text-secondary-400">...dan ${students.length - 10} siswa lainnya</td></tr>`;
+        }
+      }
+      
+      const altTbody = document.querySelector('#sheets-alt-table tbody');
+      if (altTbody) {
+        altTbody.innerHTML = alternatives.map(a => `
+          <tr>
+            <td class="font-mono font-medium">${a.kode}</td>
+            <td>${a.nama}</td>
+          </tr>
+        `).join('');
+      }
+      
+      previewDiv?.classList.remove('hidden');
+      
+      const countEl = document.getElementById('sheets-count');
+      if (countEl) {
+        const lowC1 = students.filter(s => s.c1 < 70).length;
+        const lowC4 = students.filter(s => s.c4 < 70).length;
+        let message = `${students.length} siswa, ${alternatives.length} alternatif dimuat`;
+        if (lowC1 > 0 || lowC4 > 0) {
+          message += ` (${lowC1 + lowC4} siswa di bawah batas minimum)`;
+        }
+        countEl.textContent = message;
+      }
+    }
+  });
+  
+  declare global {
+    interface Window {
+      API_URL: string;
+      AppState: any;
+      GoogleSheetId?: string;
+      JarakPerSiswa?: Record<string, Record<string, number>>;
+    }
+  }
+</script>

@@ -1,0 +1,824 @@
+---
+import { 
+  X, 
+  Download, 
+  FileText, 
+  BarChart3, 
+  Users, 
+  Award,
+  CheckCircle,
+  TrendingUp,
+  Calculator,
+  Calendar,
+  Target,
+  Printer
+} from 'lucide-astro';
+---
+
+<div id="summary-modal" class="fixed inset-0 z-[1000] items-start justify-center p-4 overflow-y-auto hidden" role="dialog" aria-modal="true">
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" id="summary-modal-backdrop"></div>
+  
+  <div class="relative w-full max-w-[900px] mx-auto my-8 z-[1001]">
+    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden animate-modal-slide-in" id="summary-modal-panel">
+      <div class="flex items-center justify-between px-6 py-5 bg-gradient-to-br from-sky-600 to-sky-700 text-white flex-wrap gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+            <FileText size={24} strokeWidth={1.5} />
+          </div>
+          <div class="header-text">
+            <h2 class="text-xl font-bold m-0 leading-tight">Kesimpulan Analisis VIKOR</h2>
+            <p class="text-sm opacity-90 mt-1 m-0">Rangkuman lengkap untuk jurnal akademik</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-download-pdf" class="flex items-center gap-2 px-4 py-2.5 bg-white text-sky-600 border-none rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 hover:bg-sky-50 hover:-translate-y-px disabled:opacity-70 disabled:cursor-not-allowed">
+            <Download size={18} strokeWidth={2} />
+            <span>Download PDF</span>
+          </button>
+          <button id="btn-print-summary" class="w-10 h-10 flex items-center justify-center bg-white/20 border-none rounded-lg text-white cursor-pointer transition-all duration-200 hover:bg-white/30">
+            <Printer size={18} strokeWidth={2} />
+          </button>
+          <button id="btn-close-summary" class="w-10 h-10 flex items-center justify-center bg-white/20 border-none rounded-lg text-white cursor-pointer transition-all duration-200 hover:bg-white/30">
+            <X size={24} strokeWidth={2} />
+          </button>
+        </div>
+      </div>
+
+      <div class="max-h-[calc(100vh-200px)] overflow-y-auto p-6 bg-slate-50">
+        <div class="bg-white rounded-lg shadow-md p-10 max-w-full" id="paper-content">
+          <div class="text-center pb-8 border-b-2 border-slate-200 mb-8">
+            <div class="w-16 h-16 bg-gradient-to-br from-sky-600 to-sky-700 rounded-2xl flex items-center justify-center text-white mx-auto mb-4">
+              <Target size={32} strokeWidth={1.5} />
+            </div>
+            <h1 class="text-2xl font-bold text-sky-900 mb-2">Laporan Analisis Sistem Pendukung Keputusan</h1>
+            <p class="text-base text-slate-500 mb-4">Pemilihan Tempat Magang Optimal Menggunakan Metode VIKOR</p>
+            <div class="flex justify-center gap-6 flex-wrap">
+              <div class="flex items-center gap-1.5 text-sm text-slate-500">
+                <Calendar size={14} strokeWidth={2} />
+                <span id="report-date">-</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-sm text-slate-500">
+                <Users size={14} strokeWidth={2} />
+                <span id="report-total-students">0 Siswa</span>
+              </div>
+            </div>
+          </div>
+
+          <section class="mb-8 break-inside-avoid">
+            <h2 class="flex items-center gap-2.5 text-lg font-bold text-sky-900 mb-4 pb-2 border-b-2 border-slate-200 [&>svg]:text-sky-600">
+              <Award size={20} strokeWidth={2} />
+              Ringkasan Eksekutif
+            </h2>
+            <div class="bg-gradient-to-br from-sky-50 to-sky-100 rounded-xl p-6 border-l-4 border-sky-600 [&>p]:mb-3 [&>p]:leading-relaxed [&>p]:text-slate-700 [&>p:last-child]:mb-0" id="executive-summary">
+              <p class="text-slate-400 italic">Memuat data...</p>
+            </div>
+          </section>
+
+          <section class="mb-8 break-inside-avoid">
+            <h2 class="flex items-center gap-2.5 text-lg font-bold text-sky-900 mb-4 pb-2 border-b-2 border-slate-200 [&>svg]:text-sky-600">
+              <BarChart3 size={20} strokeWidth={2} />
+              Statistik Analisis
+            </h2>
+            <div class="grid grid-cols-4 gap-4 max-md:grid-cols-2">
+              <div class="bg-slate-50 rounded-xl p-5 text-center border border-slate-200 border-l-4 border-l-sky-600">
+                <div class="text-4xl font-bold text-slate-800 leading-none mb-1" id="summary-stat-total">0</div>
+                <div class="text-xs text-slate-500 font-medium">Total Siswa</div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-5 text-center border border-slate-200 border-l-4 border-l-emerald-500">
+                <div class="text-4xl font-bold text-slate-800 leading-none mb-1" id="summary-stat-qualified">0</div>
+                <div class="text-xs text-slate-500 font-medium">Siswa Lolos</div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-5 text-center border border-slate-200 border-l-4 border-l-red-500">
+                <div class="text-4xl font-bold text-slate-800 leading-none mb-1" id="summary-stat-disqualified">0</div>
+                <div class="text-xs text-slate-500 font-medium">Tidak Lolos</div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-5 text-center border border-slate-200 border-l-4 border-l-amber-500">
+                <div class="text-4xl font-bold text-slate-800 leading-none mb-1" id="summary-stat-dudi">0</div>
+                <div class="text-xs text-slate-500 font-medium">Alternatif DUDI</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="mb-8 break-inside-avoid">
+            <h2 class="flex items-center gap-2.5 text-lg font-bold text-sky-900 mb-4 pb-2 border-b-2 border-slate-200 [&>svg]:text-sky-600">
+              <TrendingUp size={20} strokeWidth={2} />
+              Hasil Rekomendasi per Siswa
+            </h2>
+            <div class="overflow-x-auto rounded-xl border border-slate-200">
+              <table class="w-full border-collapse text-sm">
+                <thead class="bg-gradient-to-br from-sky-900 to-sky-800 text-white">
+                  <tr>
+                    <th class="px-3 py-3.5 text-left font-semibold whitespace-nowrap">Rank</th>
+                    <th class="px-3 py-3.5 text-left font-semibold whitespace-nowrap">Nama Siswa</th>
+                    <th class="px-3 py-3.5 text-left font-semibold whitespace-nowrap">C1</th>
+                    <th class="px-3 py-3.5 text-left font-semibold whitespace-nowrap">C2</th>
+                    <th class="px-3 py-3.5 text-left font-semibold whitespace-nowrap">C4</th>
+                    <th class="px-3 py-3.5 text-left font-semibold whitespace-nowrap">C5</th>
+                    <th class="px-3 py-3.5 text-left font-semibold whitespace-nowrap">Rekomendasi DUDI</th>
+                    <th class="px-3 py-3.5 text-left font-semibold whitespace-nowrap">Nilai Q</th>
+                  </tr>
+                </thead>
+                <tbody id="summary-candidates-table" class="[&>tr]:border-b [&>tr]:border-slate-200 [&>tr:hover]:bg-sky-50 [&>tr.best-candidate]:bg-gradient-to-br [&>tr.best-candidate]:from-amber-100 [&>tr.best-candidate]:to-yellow-50 [&>td]:px-3 [&>td]:py-3 [&>td]:text-slate-700 [&_.candidate-name]:font-semibold [&_.candidate-name]:text-sky-900 [&_.recommendation]:text-teal-600 [&_.recommendation]:font-medium [&_.q-value]:font-mono [&_.q-value]:text-sky-600 [&_.q-value]:font-semibold">
+                  <tr>
+                    <td colspan="8" class="text-center py-8 text-slate-400 italic">Memuat data...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="mb-8 break-inside-avoid">
+            <h2 class="flex items-center gap-2.5 text-lg font-bold text-sky-900 mb-4 pb-2 border-b-2 border-slate-200 [&>svg]:text-sky-600">
+              <BarChart3 size={20} strokeWidth={2} />
+              Distribusi Rekomendasi per DUDI
+            </h2>
+            <div class="h-[280px] bg-neutral-50 rounded-xl p-4 mb-3">
+              <canvas id="summary-chart-distribution"></canvas>
+            </div>
+            <p class="text-[0.8125rem] text-slate-500 text-center italic m-0">Grafik menunjukkan jumlah siswa yang direkomendasikan untuk masing-masing DUDI.</p>
+          </section>
+
+          <section class="mb-8 break-inside-avoid">
+            <h2 class="flex items-center gap-2.5 text-lg font-bold text-sky-900 mb-4 pb-2 border-b-2 border-slate-200 [&>svg]:text-sky-600">
+              <Calculator size={20} strokeWidth={2} />
+              Analisis Perhitungan VIKOR
+            </h2>
+            <div class="bg-slate-50 rounded-xl p-6" id="vikor-analysis-content">
+              <p class="text-slate-400 italic">Memuat analisis...</p>
+            </div>
+          </section>
+
+          <section class="mb-8 break-inside-avoid">
+            <h2 class="flex items-center gap-2.5 text-lg font-bold text-sky-900 mb-4 pb-2 border-b-2 border-slate-200 [&>svg]:text-sky-600">
+              <FileText size={20} strokeWidth={2} />
+              Catatan Metodologi
+            </h2>
+            <div class="bg-slate-50 rounded-xl p-6">
+              <p class="mb-4 leading-relaxed text-slate-700">
+                Penelitian ini menggunakan metode <strong>VIKOR (VlseKriterijumska Optimizacija I Kompromisno Resenje)</strong> 
+                untuk menentukan peringkat alternatif berdasarkan pendekatan agregasi fungsi utilitas dan regret. 
+                Metode ini dipilih karena kemampuannya dalam memberikan solusi kompromi yang mendekati solusi ideal.
+              </p>
+              <div class="bg-white rounded-lg p-4 mb-4 border border-slate-200">
+                <p class="mb-2"><strong>Formula VIKOR:</strong></p>
+                <div class="bg-sky-50 p-4 rounded-md font-mono text-[0.9375rem] text-sky-900 text-center mb-2">
+                  Q<sub>i</sub> = v × (S<sub>i</sub> - S*) / (S<sup>-</sup> - S*) + (1-v) × (R<sub>i</sub> - R*) / (R<sup>-</sup> - R*)
+                </div>
+                <p class="text-[0.8125rem] text-slate-500 italic text-center m-0">Dengan v = 0.5 (bobot strategi seimbang)</p>
+              </div>
+              <div>
+                <p class="mb-2"><strong>Kriteria Penilaian:</strong></p>
+                <ul class="mt-2 ml-6 p-0 list-disc">
+                  <li class="mb-1.5 text-slate-600 text-sm"><strong>C1 (30%)</strong> - Akumulasi Nilai Rapor (Benefit)</li>
+                  <li class="mb-1.5 text-slate-600 text-sm"><strong>C2 (20%)</strong> - Sikap & Kedisiplinan (Benefit)</li>
+                  <li class="mb-1.5 text-slate-600 text-sm"><strong>C3 (10%)</strong> - Jarak Lokasi (Cost)</li>
+                  <li class="mb-1.5 text-slate-600 text-sm"><strong>C4 (25%)</strong> - Nilai Sertifikasi (Benefit)</li>
+                  <li class="mb-1.5 text-slate-600 text-sm"><strong>C5 (15%)</strong> - Rekomendasi Guru (Benefit)</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section class="mb-8 break-inside-avoid">
+            <h2 class="flex items-center gap-2.5 text-lg font-bold text-sky-900 mb-4 pb-2 border-b-2 border-slate-200 [&>svg]:text-sky-600">
+              <CheckCircle size={20} strokeWidth={2} />
+              Kesimpulan
+            </h2>
+            <div class="bg-gradient-to-br from-emerald-100 to-emerald-50 rounded-xl p-6 border-l-4 border-emerald-500" id="conclusion-content">
+              <p class="text-slate-400 italic">Memuat kesimpulan...</p>
+            </div>
+          </section>
+
+          <div class="mt-8 pt-6 border-t border-slate-200 text-center">
+            <p class="text-xs text-slate-400 mb-1">
+              Dokumen ini dihasilkan secara otomatis oleh Sistem Pendukung Keputusan VIKOR
+            </p>
+            <p class="text-[0.6875rem] text-slate-300" id="footer-timestamp">-</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', function() {
+    var modal = document.getElementById('summary-modal');
+    var backdrop = document.getElementById('summary-modal-backdrop');
+    var closeBtn = document.getElementById('btn-close-summary');
+    var openBtn = document.getElementById('btn-open-summary');
+    var downloadBtn = document.getElementById('btn-download-pdf');
+    var printBtn = document.getElementById('btn-print-summary');
+    
+    if (openBtn) {
+      openBtn.addEventListener('click', function() {
+        if (modal) {
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+        }
+        document.body.style.overflow = 'hidden';
+        populateSummaryData();
+      });
+    }
+    
+    function closeModal() {
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+      document.body.style.overflow = '';
+    }
+    
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (backdrop) backdrop.addEventListener('click', closeModal);
+    
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+        closeModal();
+      }
+    });
+    
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', async function() {
+        var results = window.AppState && window.AppState.vikorResults;
+        if (!results) {
+          alert('Data hasil analisis belum tersedia.');
+          return;
+        }
+        
+        downloadBtn.innerHTML = '<span class="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> Generating...';
+        downloadBtn.disabled = true;
+        
+        try {
+          if (!window.jspdf) {
+            await new Promise(function(resolve, reject) {
+              var script = document.createElement('script');
+              script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+              script.onload = resolve;
+              script.onerror = reject;
+              document.head.appendChild(script);
+            });
+          }
+          
+          var jsPDF = window.jspdf.jsPDF;
+          var doc = new jsPDF('p', 'mm', 'a4');
+          var pageWidth = doc.internal.pageSize.getWidth();
+          var pageHeight = doc.internal.pageSize.getHeight();
+          var margin = 20;
+          var contentWidth = pageWidth - (margin * 2);
+          var y = margin;
+          
+          function checkPageBreak(neededHeight) {
+            if (y + neededHeight > pageHeight - margin) {
+              doc.addPage();
+              y = margin;
+              return true;
+            }
+            return false;
+          }
+          
+          function addTitle(text, size, color) {
+            doc.setFontSize(size || 16);
+            doc.setTextColor(color || '#0c4a6e');
+            doc.setFont('helvetica', 'bold');
+            var lines = doc.splitTextToSize(text, contentWidth);
+            checkPageBreak(lines.length * (size * 0.4) + 5);
+            doc.text(lines, margin, y);
+            y += lines.length * (size * 0.4) + 3;
+          }
+          
+          function addText(text, size, color, indent) {
+            doc.setFontSize(size || 11);
+            doc.setTextColor(color || '#334155');
+            doc.setFont('helvetica', 'normal');
+            var textWidth = contentWidth - (indent || 0);
+            var lines = doc.splitTextToSize(text, textWidth);
+            checkPageBreak(lines.length * 5 + 3);
+            doc.text(lines, margin + (indent || 0), y);
+            y += lines.length * 5;
+          }
+          
+          function addLine() {
+            y += 2;
+            doc.setDrawColor('#e2e8f0');
+            doc.setLineWidth(0.5);
+            doc.line(margin, y, pageWidth - margin, y);
+            y += 5;
+          }
+          
+          function addSpace(height) {
+            y += height || 5;
+          }
+          
+          doc.setFillColor('#0284c7');
+          doc.rect(0, 0, pageWidth, 35, 'F');
+          
+          doc.setFontSize(18);
+          doc.setTextColor('#ffffff');
+          doc.setFont('helvetica', 'bold');
+          doc.text('Laporan Analisis Sistem Pendukung Keputusan', pageWidth / 2, 15, { align: 'center' });
+          
+          doc.setFontSize(12);
+          doc.setFont('helvetica', 'normal');
+          doc.text('Pemilihan Tempat Magang Optimal Menggunakan Metode VIKOR', pageWidth / 2, 23, { align: 'center' });
+          
+          doc.setFontSize(10);
+          var now = new Date();
+          var dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+          doc.text(dateStr + ' | ' + results.metadata.totalStudents + ' Siswa', pageWidth / 2, 30, { align: 'center' });
+          
+          y = 45;
+          
+          addTitle('Ringkasan Eksekutif', 14);
+          addLine();
+          
+          if (results.qualifiedResults.length > 0) {
+            var best = results.qualifiedResults[0];
+            var qualifiedPct = ((results.metadata.qualifiedCount / results.metadata.totalStudents) * 100).toFixed(1);
+            
+            addText('Berdasarkan analisis menggunakan metode VIKOR, dari total ' + results.metadata.totalStudents + ' siswa yang dianalisis, terdapat ' + results.metadata.qualifiedCount + ' siswa (' + qualifiedPct + '%) yang memenuhi syarat minimum dan direkomendasikan untuk program magang.', 11);
+            addSpace(3);
+            addText('Kandidat terbaik adalah ' + best.siswa.nama + ' dengan nilai Q sebesar ' + best.rekomendasi.q + ', direkomendasikan untuk magang di ' + best.rekomendasi.nama + '.', 11);
+          }
+          
+          addSpace(8);
+          
+          addTitle('Statistik Analisis', 14);
+          addLine();
+          
+          var stats = [
+            { label: 'Total Siswa', value: results.metadata.totalStudents },
+            { label: 'Siswa Lolos', value: results.metadata.qualifiedCount },
+            { label: 'Tidak Lolos', value: results.metadata.disqualifiedCount },
+            { label: 'Alternatif DUDI', value: (window.AppState && window.AppState.dudiData && window.AppState.dudiData.length) || 0 }
+          ];
+          
+          var colWidth = contentWidth / 4;
+          var startX = margin;
+          
+          checkPageBreak(25);
+          
+          stats.forEach(function(stat, i) {
+            var x = startX + (i * colWidth);
+            doc.setFillColor('#f8fafc');
+            doc.roundedRect(x, y, colWidth - 3, 20, 2, 2, 'F');
+            doc.setDrawColor('#e2e8f0');
+            doc.roundedRect(x, y, colWidth - 3, 20, 2, 2, 'S');
+            
+            doc.setFontSize(16);
+            doc.setTextColor('#1e293b');
+            doc.setFont('helvetica', 'bold');
+            doc.text(String(stat.value), x + (colWidth - 3) / 2, y + 10, { align: 'center' });
+            
+            doc.setFontSize(8);
+            doc.setTextColor('#64748b');
+            doc.setFont('helvetica', 'normal');
+            doc.text(stat.label, x + (colWidth - 3) / 2, y + 16, { align: 'center' });
+          });
+          
+          y += 28;
+          
+          var allCandidates = results.qualifiedResults;
+          addTitle('Hasil Rekomendasi per Siswa (' + allCandidates.length + ' Siswa Lolos)', 14);
+          addLine();
+          
+          if (allCandidates.length > 0) {
+            var tableHeaders = ['#', 'Nama Siswa', 'C1', 'C2', 'C4', 'C5', 'Rekomendasi DUDI', 'Q'];
+            var colWidths = [8, 40, 12, 12, 12, 12, 55, 18];
+            var tableX = margin;
+            
+            function drawTableHeader() {
+              doc.setFillColor('#0c4a6e');
+              doc.rect(tableX, y, contentWidth, 8, 'F');
+              
+              doc.setFontSize(8);
+              doc.setTextColor('#ffffff');
+              doc.setFont('helvetica', 'bold');
+              
+              var headerX = tableX;
+              tableHeaders.forEach(function(header, i) {
+                doc.text(header, headerX + 2, y + 5.5);
+                headerX += colWidths[i];
+              });
+              
+              y += 8;
+            }
+            
+            drawTableHeader();
+            
+            allCandidates.forEach(function(r, idx) {
+              if (y + 7 > pageHeight - margin - 20) {
+                doc.addPage();
+                y = margin;
+                drawTableHeader();
+              }
+              
+              var rowY = y;
+              
+              if (idx % 2 === 0) {
+                doc.setFillColor('#f8fafc');
+                doc.rect(tableX, rowY, contentWidth, 7, 'F');
+              }
+              
+              if (idx === 0) {
+                doc.setFillColor('#fef3c7');
+                doc.rect(tableX, rowY, contentWidth, 7, 'F');
+              }
+              
+              if (idx === 1) {
+                doc.setFillColor('#f1f5f9');
+                doc.rect(tableX, rowY, contentWidth, 7, 'F');
+              }
+              
+              if (idx === 2) {
+                doc.setFillColor('#fef3c7');
+                doc.rect(tableX, rowY, contentWidth, 7, 'F');
+              }
+              
+              doc.setFontSize(8);
+              doc.setTextColor('#334155');
+              doc.setFont('helvetica', 'normal');
+              
+              var cellX = tableX;
+              var rowData = [
+                String(idx + 1),
+                r.siswa.nama.length > 22 ? r.siswa.nama.substring(0, 22) + '...' : r.siswa.nama,
+                String(r.siswa.c1),
+                String(r.siswa.c2),
+                String(r.siswa.c4),
+                String(r.siswa.c5),
+                r.rekomendasi.nama.length > 32 ? r.rekomendasi.nama.substring(0, 32) + '...' : r.rekomendasi.nama,
+                String(r.rekomendasi.q)
+              ];
+              
+              rowData.forEach(function(cell, i) {
+                doc.text(cell, cellX + 2, rowY + 5);
+                cellX += colWidths[i];
+              });
+              
+              doc.setDrawColor('#e2e8f0');
+              doc.line(tableX, rowY + 7, tableX + contentWidth, rowY + 7);
+              
+              y += 7;
+            });
+          }
+          
+          addSpace(10);
+          
+          checkPageBreak(50);
+          addTitle('Analisis Perhitungan VIKOR', 14);
+          addLine();
+          
+          if (results.qualifiedResults.length > 0) {
+            var qValues = results.qualifiedResults.map(function(r) { return parseFloat(r.rekomendasi.q); });
+            var sumQ = qValues.reduce(function(a, b) { return a + b; }, 0);
+            var avgQ = sumQ / results.qualifiedResults.length;
+            var minQ = Math.min.apply(null, qValues);
+            var maxQ = Math.max.apply(null, qValues);
+            
+            addText('• Rata-rata Nilai Q: ' + avgQ.toFixed(4), 11, '#334155', 5);
+            addText('• Nilai Q Terbaik (Min): ' + minQ.toFixed(4), 11, '#10b981', 5);
+            addText('• Nilai Q Terburuk (Max): ' + maxQ.toFixed(4), 11, '#f59e0b', 5);
+            
+            addSpace(5);
+            addText('Dalam metode VIKOR, nilai Q yang lebih rendah menunjukkan alternatif yang lebih optimal. Kandidat dengan nilai Q = ' + minQ.toFixed(4) + ' merupakan pilihan terbaik berdasarkan kombinasi utility (S) dan regret (R) yang seimbang.', 10, '#713f12');
+          }
+          
+          addSpace(10);
+          
+          checkPageBreak(60);
+          addTitle('Catatan Metodologi', 14);
+          addLine();
+          
+          addText('Penelitian ini menggunakan metode VIKOR (VlseKriterijumska Optimizacija I Kompromisno Resenje) untuk menentukan peringkat alternatif berdasarkan pendekatan agregasi fungsi utilitas dan regret.', 10);
+          
+          addSpace(5);
+          doc.setFont('helvetica', 'bold');
+          addText('Formula VIKOR:', 10, '#0c4a6e');
+          doc.setFont('helvetica', 'normal');
+          addText('Qi = v × (Si - S*) / (S⁻ - S*) + (1-v) × (Ri - R*) / (R⁻ - R*)', 10, '#0c4a6e', 10);
+          addText('Dengan v = 0.5 (bobot strategi seimbang)', 9, '#64748b', 10);
+          
+          addSpace(5);
+          doc.setFont('helvetica', 'bold');
+          addText('Kriteria Penilaian:', 10, '#0c4a6e');
+          doc.setFont('helvetica', 'normal');
+          addText('• C1 (30%) - Akumulasi Nilai Rapor (Benefit)', 9, '#334155', 5);
+          addText('• C2 (20%) - Sikap & Kedisiplinan (Benefit)', 9, '#334155', 5);
+          addText('• C3 (10%) - Jarak Lokasi (Cost)', 9, '#334155', 5);
+          addText('• C4 (25%) - Nilai Sertifikasi (Benefit)', 9, '#334155', 5);
+          addText('• C5 (15%) - Rekomendasi Guru (Benefit)', 9, '#334155', 5);
+          
+          addSpace(10);
+          
+          checkPageBreak(40);
+          addTitle('Kesimpulan', 14);
+          addLine();
+          
+          if (results.qualifiedResults.length > 0) {
+            var bestCandidate = results.qualifiedResults[0];
+            var distribution = (results.summary && results.summary.distribusiDUDI) || {};
+            var sortedDist = Object.entries(distribution).sort(function(a, b) { return b[1] - a[1]; });
+            var mostPopular = sortedDist.length > 0 ? sortedDist[0] : null;
+            
+            addText('1. Berdasarkan hasil analisis VIKOR, kandidat terbaik untuk program magang adalah ' + bestCandidate.siswa.nama + ' dengan skor Q optimal sebesar ' + bestCandidate.rekomendasi.q + '.', 10, '#166534', 5);
+            
+            addText('2. Dari ' + results.metadata.totalStudents + ' siswa, ' + results.metadata.qualifiedCount + ' siswa (' + ((results.metadata.qualifiedCount / results.metadata.totalStudents) * 100).toFixed(1) + '%) memenuhi kriteria minimum untuk direkomendasikan.', 10, '#166534', 5);
+            
+            if (mostPopular) {
+              addText('3. DUDI dengan penerimaan terbanyak adalah ' + mostPopular[0] + ' dengan ' + mostPopular[1] + ' siswa yang direkomendasikan.', 10, '#166534', 5);
+            }
+            
+            addText('4. Sistem telah berhasil mengoptimalkan penempatan magang berdasarkan 5 kriteria penilaian yang mencakup aspek akademik, sikap, dan aksesibilitas.', 10, '#166534', 5);
+          }
+          
+          var totalPages = doc.internal.getNumberOfPages();
+          for (var i = 1; i <= totalPages; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor('#94a3b8');
+            doc.text('Dokumen ini dihasilkan secara otomatis oleh Sistem Pendukung Keputusan VIKOR', pageWidth / 2, pageHeight - 15, { align: 'center' });
+            doc.text('Dicetak pada: ' + now.toLocaleString('id-ID') + ' | Halaman ' + i + ' dari ' + totalPages, pageWidth / 2, pageHeight - 10, { align: 'center' });
+          }
+          
+          doc.save('Laporan_SPK_VIKOR_' + new Date().toISOString().split('T')[0] + '.pdf');
+          
+          downloadBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> Berhasil!';
+          setTimeout(function() {
+            downloadBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg><span>Download PDF</span>';
+            downloadBtn.disabled = false;
+          }, 2000);
+        } catch (err) {
+          console.error('PDF generation failed:', err);
+          alert('Gagal membuat PDF: ' + err.message);
+          downloadBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg><span>Download PDF</span>';
+          downloadBtn.disabled = false;
+        }
+      });
+    }
+    
+    if (printBtn) {
+      printBtn.addEventListener('click', function() {
+        window.print();
+      });
+    }
+    
+    function populateSummaryData() {
+      var results = window.AppState && window.AppState.vikorResults;
+      if (!results) return;
+      
+      var now = new Date();
+      var dateFormatted = now.toLocaleDateString('id-ID', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      
+      var reportDateEl = document.getElementById('report-date');
+      var footerTimestampEl = document.getElementById('footer-timestamp');
+      var reportTotalStudentsEl = document.getElementById('report-total-students');
+      var summaryStatTotalEl = document.getElementById('summary-stat-total');
+      var summaryStatQualifiedEl = document.getElementById('summary-stat-qualified');
+      var summaryStatDisqualifiedEl = document.getElementById('summary-stat-disqualified');
+      var summaryStatDudiEl = document.getElementById('summary-stat-dudi');
+      
+      if (reportDateEl) reportDateEl.textContent = dateFormatted;
+      if (footerTimestampEl) footerTimestampEl.textContent = 'Dicetak pada: ' + now.toLocaleString('id-ID');
+      
+      if (reportTotalStudentsEl) reportTotalStudentsEl.textContent = results.metadata.totalStudents + ' Siswa';
+      if (summaryStatTotalEl) summaryStatTotalEl.textContent = String(results.metadata.totalStudents);
+      if (summaryStatQualifiedEl) summaryStatQualifiedEl.textContent = String(results.metadata.qualifiedCount);
+      if (summaryStatDisqualifiedEl) summaryStatDisqualifiedEl.textContent = String(results.metadata.disqualifiedCount);
+      if (summaryStatDudiEl) summaryStatDudiEl.textContent = String((window.AppState && window.AppState.dudiData && window.AppState.dudiData.length) || 0);
+      
+      var execSummary = document.getElementById('executive-summary');
+      if (execSummary && results.qualifiedResults.length > 0) {
+        var best = results.qualifiedResults[0];
+        var qualifiedPct = ((results.metadata.qualifiedCount / results.metadata.totalStudents) * 100).toFixed(1);
+        
+        execSummary.innerHTML = 
+          '<p>' +
+            'Berdasarkan analisis menggunakan metode VIKOR, dari total <strong>' + results.metadata.totalStudents + ' siswa</strong> ' +
+            'yang dianalisis, terdapat <strong>' + results.metadata.qualifiedCount + ' siswa (' + qualifiedPct + '%)</strong> yang ' +
+            'memenuhi syarat minimum dan direkomendasikan untuk program magang.' +
+          '</p>' +
+          '<p>' +
+            'Kandidat terbaik adalah <strong>' + best.siswa.nama + '</strong> dengan nilai Q sebesar ' +
+            '<strong>' + best.rekomendasi.q + '</strong>, direkomendasikan untuk magang di ' +
+            '<strong>' + best.rekomendasi.nama + '</strong>.' +
+          '</p>' +
+          '<p>' +
+            'Sistem berhasil mendistribusikan ' + results.metadata.qualifiedCount + ' siswa ke ' +
+            Object.keys((results.summary && results.summary.distribusiDUDI) || {}).length + ' tempat magang yang tersedia ' +
+            'berdasarkan optimasi multi-kriteria.' +
+          '</p>';
+      }
+      
+      var candidatesTable = document.getElementById('summary-candidates-table');
+      if (candidatesTable) {
+        var allCandidates = results.qualifiedResults;
+        candidatesTable.innerHTML = allCandidates.map(function(r, i) {
+          var rankBadge = i === 0 ? '<span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold bg-gradient-to-br from-amber-400 to-amber-500 text-white">1</span>' : 
+                         i === 1 ? '<span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold bg-gradient-to-br from-slate-400 to-slate-500 text-white">2</span>' :
+                         i === 2 ? '<span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold bg-gradient-to-br from-amber-700 to-amber-800 text-white">3</span>' : (i + 1);
+          return '<tr class="' + (i === 0 ? 'best-candidate' : '') + '">' +
+            '<td>' + rankBadge + '</td>' +
+            '<td class="candidate-name">' + r.siswa.nama + '</td>' +
+            '<td>' + r.siswa.c1 + '</td>' +
+            '<td>' + r.siswa.c2 + '</td>' +
+            '<td>' + r.siswa.c4 + '</td>' +
+            '<td>' + r.siswa.c5 + '</td>' +
+            '<td class="recommendation">' + r.rekomendasi.nama + '</td>' +
+            '<td class="q-value">' + r.rekomendasi.q + '</td>' +
+          '</tr>';
+        }).join('');
+      }
+      
+      renderSummaryChart(results);
+      
+      var analysisContent = document.getElementById('vikor-analysis-content');
+      if (analysisContent && results.qualifiedResults.length > 0) {
+        var qValues = results.qualifiedResults.map(function(r) { return parseFloat(r.rekomendasi.q); });
+        var sumQ = qValues.reduce(function(a, b) { return a + b; }, 0);
+        var avgQ = sumQ / results.qualifiedResults.length;
+        var minQ = Math.min.apply(null, qValues);
+        var maxQ = Math.max.apply(null, qValues);
+        
+        analysisContent.innerHTML = 
+          '<div class="grid grid-cols-3 gap-4 mb-4 max-md:grid-cols-1">' +
+            '<div class="flex flex-col p-4 bg-white rounded-lg border border-slate-200">' +
+              '<span class="text-xs text-slate-500 mb-1">Rata-rata Nilai Q:</span>' +
+              '<span class="text-xl font-bold font-mono text-slate-800">' + avgQ.toFixed(4) + '</span>' +
+            '</div>' +
+            '<div class="flex flex-col p-4 bg-white rounded-lg border border-slate-200">' +
+              '<span class="text-xs text-slate-500 mb-1">Nilai Q Terbaik (Min):</span>' +
+              '<span class="text-xl font-bold font-mono text-emerald-500">' + minQ.toFixed(4) + '</span>' +
+            '</div>' +
+            '<div class="flex flex-col p-4 bg-white rounded-lg border border-slate-200">' +
+              '<span class="text-xs text-slate-500 mb-1">Nilai Q Terburuk (Max):</span>' +
+              '<span class="text-xl font-bold font-mono text-amber-500">' + maxQ.toFixed(4) + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<p class="m-0 p-4 bg-gradient-to-br from-amber-100 to-yellow-50 rounded-lg border-l-4 border-amber-500 text-sm text-amber-900 leading-relaxed">' +
+            'Dalam metode VIKOR, nilai Q yang lebih rendah menunjukkan alternatif yang lebih optimal. ' +
+            'Kandidat dengan nilai Q = ' + minQ.toFixed(4) + ' merupakan pilihan terbaik berdasarkan ' +
+            'kombinasi utility (S) dan regret (R) yang seimbang.' +
+          '</p>';
+      }
+      
+      var conclusionContent = document.getElementById('conclusion-content');
+      if (conclusionContent && results.qualifiedResults.length > 0) {
+        var bestCandidate = results.qualifiedResults[0];
+        var distribution = (results.summary && results.summary.distribusiDUDI) || {};
+        var sortedDistribution = Object.entries(distribution).sort(function(a, b) { return b[1] - a[1]; });
+        var mostPopular = sortedDistribution.length > 0 ? sortedDistribution[0] : null;
+        
+        var conclusionHtml = 
+          '<ol class="m-0 pl-5 list-decimal">' +
+            '<li class="mb-3 leading-relaxed text-green-800">' +
+              'Berdasarkan hasil analisis VIKOR, kandidat terbaik untuk program magang adalah ' +
+              '<strong>' + bestCandidate.siswa.nama + '</strong> dengan skor Q optimal sebesar ' + bestCandidate.rekomendasi.q + '.' +
+            '</li>' +
+            '<li class="mb-3 leading-relaxed text-green-800">' +
+              'Dari ' + results.metadata.totalStudents + ' siswa, ' + results.metadata.qualifiedCount + ' siswa ' +
+              '(' + ((results.metadata.qualifiedCount / results.metadata.totalStudents) * 100).toFixed(1) + '%) ' +
+              'memenuhi kriteria minimum untuk direkomendasikan.' +
+            '</li>';
+        
+        if (mostPopular) {
+          conclusionHtml += '<li class="mb-3 leading-relaxed text-green-800">' +
+            'DUDI dengan penerimaan terbanyak adalah <strong>' + mostPopular[0] + '</strong> ' +
+            'dengan ' + mostPopular[1] + ' siswa yang direkomendasikan.' +
+          '</li>';
+        }
+        
+        conclusionHtml += '<li class="mb-0 leading-relaxed text-green-800">' +
+            'Sistem telah berhasil mengoptimalkan penempatan magang berdasarkan 5 kriteria ' +
+            'penilaian yang mencakup aspek akademik, sikap, dan aksesibilitas.' +
+          '</li>' +
+        '</ol>';
+        
+        conclusionContent.innerHTML = conclusionHtml;
+      }
+    }
+    
+    function renderSummaryChart(results) {
+      var chartCanvas = document.getElementById('summary-chart-distribution');
+      if (!chartCanvas || !window.Chart) return;
+      
+      var distribution = (results.summary && results.summary.distribusiDUDI) || {};
+      var labels = Object.keys(distribution);
+      var values = Object.values(distribution);
+      
+      var existingChart = window.Chart.getChart(chartCanvas);
+      if (existingChart) existingChart.destroy();
+      
+      new window.Chart(chartCanvas, {
+        type: 'bar',
+        data: {
+          labels: labels.map(function(l) { return l.length > 20 ? l.slice(0, 20) + '...' : l; }),
+          datasets: [{
+            label: 'Jumlah Siswa',
+            data: values,
+            backgroundColor: [
+              'rgba(14, 165, 233, 0.8)',
+              'rgba(16, 185, 129, 0.8)',
+              'rgba(245, 158, 11, 0.8)',
+              'rgba(99, 102, 241, 0.8)',
+              'rgba(236, 72, 153, 0.8)',
+            ],
+            borderColor: [
+              'rgb(14, 165, 233)',
+              'rgb(16, 185, 129)',
+              'rgb(245, 158, 11)',
+              'rgb(99, 102, 241)',
+              'rgb(236, 72, 153)',
+            ],
+            borderWidth: 2,
+            borderRadius: 8,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+          },
+          scales: {
+            y: { 
+              beginAtZero: true,
+              ticks: { stepSize: 1 }
+            },
+            x: {
+              grid: { display: false }
+            }
+          },
+        },
+      });
+    }
+  });
+</script>
+
+<style>
+  @keyframes modal-slide-in {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-modal-slide-in {
+    animation: modal-slide-in 0.3s ease;
+  }
+  
+  @media print {
+    #summary-modal > div:first-child > div:first-child > div:first-child {
+      display: none !important;
+    }
+    
+    #summary-modal > div:first-child > div:first-child > div:last-child {
+      padding: 0 !important;
+      max-height: none !important;
+    }
+    
+    #paper-content {
+      box-shadow: none !important;
+      padding: 0 !important;
+    }
+    
+    section {
+      page-break-inside: avoid;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    #summary-modal .relative.w-full {
+      margin: 0.5rem;
+    }
+    
+    #summary-modal-panel {
+      border-radius: 1rem;
+    }
+    
+    #summary-modal .header-text {
+      display: none;
+    }
+    
+    #paper-content {
+      padding: 1.25rem !important;
+    }
+    
+    #paper-content h1 {
+      font-size: 1.125rem !important;
+    }
+    
+    #summary-candidates-table {
+      font-size: 0.75rem;
+    }
+  }
+</style>

@@ -1,0 +1,630 @@
+---
+import Dropdown from '../ui/dropdown.astro';
+import { 
+  Calculator, 
+  Lightbulb, 
+  ListOrdered, 
+  BarChart3, 
+  Search, 
+  ArrowRight,
+  X,
+  User,
+  ClipboardList,
+  TrendingUp,
+  Trophy,
+  CheckCircle,
+  Printer,
+  Star,
+  ChevronDown
+} from 'lucide-astro';
+---
+
+<div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden mb-8" id="formula-section">
+  <!-- Header Section -->
+  <div class="flex flex-wrap items-center justify-between gap-4 p-5 bg-gradient-to-br from-sky-50 to-sky-100 border-b border-sky-200">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-sky-600 shadow-md shrink-0">
+        <Calculator size={24} strokeWidth={1.5} />
+      </div>
+      <div class="min-w-0">
+        <h3 class="text-lg font-bold text-sky-900 m-0 leading-tight">Detail Rumus VIKOR</h3>
+        <p class="text-sm text-slate-500 mt-1 leading-snug">Pelajari metode dan formula perhitungan langkah demi langkah</p>
+      </div>
+    </div>
+    <button id="btn-toggle-formula" class="flex items-center gap-2 px-4 py-2.5 bg-white border border-sky-400 rounded-lg text-sky-600 text-sm font-semibold cursor-pointer transition-all hover:bg-sky-50 hover:-translate-y-0.5 shrink-0">
+      <span id="toggle-text">Tampilkan Rumus</span>
+      <ChevronDown id="icon-indicator" size={18} class="transition-transform duration-300" />
+    </button>
+  </div>
+
+  <!-- Collapsible Formula Content -->
+  <div id="formula-content" class="hidden p-6 animate-fade-in">
+    
+    <!-- VIKOR Method Overview -->
+    <div class="flex gap-4 p-5 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl border border-yellow-300 mb-6 items-start">
+      <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-yellow-600 shrink-0 shadow">
+        <Lightbulb size={24} strokeWidth={1.5} />
+      </div>
+      <div class="flex-1 min-w-0">
+        <h4 class="text-base font-bold text-yellow-800 mb-2">Apa itu VIKOR?</h4>
+        <p class="text-sm text-yellow-700 leading-relaxed">
+          <strong>VIKOR (VlseKriterijumska Optimizacija I Kompromisno Resenje)</strong> adalah metode 
+          pengambilan keputusan yang membantu memilih alternatif terbaik dari beberapa pilihan. 
+          Metode ini mencari <em>solusi kompromi</em> yang paling dekat dengan kondisi ideal.
+        </p>
+      </div>
+    </div>
+
+    <!-- Step by Step Section -->
+    <div class="mb-6">
+      <div class="flex items-center gap-2.5 mb-4 pb-3 border-b-2 border-slate-200 text-sky-600">
+        <ListOrdered size={20} strokeWidth={2} />
+        <h4 class="text-base font-bold text-slate-800 m-0">Langkah-langkah Perhitungan</h4>
+      </div>
+      
+      <!-- Step 1 -->
+      <div class="bg-white border border-slate-200 rounded-xl mb-4 overflow-hidden transition-shadow hover:shadow-md">
+        <div class="flex items-start gap-3.5 p-4 bg-slate-50 border-b border-slate-200">
+          <span class="w-8 h-8 min-w-[2rem] bg-gradient-to-br from-sky-400 to-sky-600 text-white rounded-lg flex items-center justify-center font-bold text-sm shrink-0">1</span>
+          <div class="flex-1 min-w-0">
+            <h5 class="text-[15px] font-bold text-slate-800 m-0 leading-snug">Identifikasi Nilai Terbaik & Terburuk</h5>
+            <p class="text-[13px] text-slate-500 mt-1 leading-relaxed">Menentukan nilai f* (terbaik) dan f- (terburuk) untuk setiap kriteria</p>
+          </div>
+        </div>
+        <div class="p-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Benefit Card -->
+            <div class="bg-gradient-to-br from-green-50 via-green-100 to-white rounded-xl p-5 border border-green-300">
+              <div class="mb-4">
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-100 rounded-full mb-1.5">
+                  <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                  <span class="text-[11px] font-bold text-green-700 tracking-wide">BENEFIT</span>
+                </div>
+                <p class="text-xs text-slate-500 m-0">Semakin tinggi = semakin baik</p>
+              </div>
+              <div class="bg-white rounded-lg p-3.5 mb-3 border border-black/5">
+                <div class="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
+                  <span class="text-[13px] text-slate-600 font-medium">Terbaik (f*)</span>
+                  <span class="font-mono text-[13px] font-semibold px-2.5 py-1 rounded-md text-green-700 bg-green-100">max(nilai)</span>
+                </div>
+                <div class="flex justify-between items-center py-2">
+                  <span class="text-[13px] text-slate-600 font-medium">Terburuk (f-)</span>
+                  <span class="font-mono text-[13px] font-semibold px-2.5 py-1 rounded-md text-red-600 bg-red-100">min(nilai)</span>
+                </div>
+              </div>
+              <p class="text-xs text-slate-400 m-0 italic">Contoh: Nilai Rapor, Sikap, Sertifikasi</p>
+            </div>
+
+            <!-- Cost Card -->
+            <div class="bg-gradient-to-br from-red-50 via-red-100 to-white rounded-xl p-5 border border-red-300">
+              <div class="mb-4">
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-100 rounded-full mb-1.5">
+                  <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                  <span class="text-[11px] font-bold text-red-600 tracking-wide">COST</span>
+                </div>
+                <p class="text-xs text-slate-500 m-0">Semakin rendah = semakin baik</p>
+              </div>
+              <div class="bg-white rounded-lg p-3.5 mb-3 border border-black/5">
+                <div class="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
+                  <span class="text-[13px] text-slate-600 font-medium">Terbaik (f*)</span>
+                  <span class="font-mono text-[13px] font-semibold px-2.5 py-1 rounded-md text-green-700 bg-green-100">min(nilai)</span>
+                </div>
+                <div class="flex justify-between items-center py-2">
+                  <span class="text-[13px] text-slate-600 font-medium">Terburuk (f-)</span>
+                  <span class="font-mono text-[13px] font-semibold px-2.5 py-1 rounded-md text-red-600 bg-red-100">max(nilai)</span>
+                </div>
+              </div>
+              <p class="text-xs text-slate-400 m-0 italic">Contoh: Jarak ke lokasi magang</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 & 3 Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <!-- Step 2: S Value -->
+        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden transition-shadow hover:shadow-md">
+          <div class="flex items-start gap-3.5 p-3.5 bg-slate-50 border-b border-slate-200">
+            <span class="w-8 h-8 min-w-[2rem] bg-gradient-to-br from-sky-400 to-sky-600 text-white rounded-lg flex items-center justify-center font-bold text-sm shrink-0">2</span>
+            <div class="flex-1 min-w-0">
+              <h5 class="text-[15px] font-bold text-slate-800 m-0 leading-snug">Nilai S (Utility)</h5>
+            </div>
+          </div>
+          <div class="p-4">
+            <p class="text-[13px] text-slate-500 mb-3 leading-relaxed">Mengukur jarak rata-rata dari solusi ideal</p>
+            <div class="bg-gradient-to-br from-sky-50 to-sky-100 border border-sky-200 rounded-xl p-4 text-center overflow-x-auto">
+              <div class="font-serif text-base text-sky-900 leading-8 whitespace-nowrap">
+                S<sub>i</sub> = Σ w<sub>j</sub> × 
+                <span class="inline-flex flex-col align-middle text-center mx-1">
+                  <span class="border-b border-sky-900 pb-0.5 text-[0.875em]">(f<sub>j</sub>* - f<sub>ij</sub>)</span>
+                  <span class="pt-0.5 text-[0.875em]">(f<sub>j</sub>* - f<sub>j</sub><sup>-</sup>)</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: R Value -->
+        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden transition-shadow hover:shadow-md">
+          <div class="flex items-start gap-3.5 p-3.5 bg-slate-50 border-b border-slate-200">
+            <span class="w-8 h-8 min-w-[2rem] bg-gradient-to-br from-sky-400 to-sky-600 text-white rounded-lg flex items-center justify-center font-bold text-sm shrink-0">3</span>
+            <div class="flex-1 min-w-0">
+              <h5 class="text-[15px] font-bold text-slate-800 m-0 leading-snug">Nilai R (Regret)</h5>
+            </div>
+          </div>
+          <div class="p-4">
+            <p class="text-[13px] text-slate-500 mb-3 leading-relaxed">Mengukur penyesalan maksimal dari gap terbesar</p>
+            <div class="bg-gradient-to-br from-sky-50 to-sky-100 border border-sky-200 rounded-xl p-4 text-center overflow-x-auto">
+              <div class="font-serif text-base text-sky-900 leading-8 whitespace-nowrap">
+                R<sub>i</sub> = max 
+                <span class="text-[1.25em] text-slate-500">[</span>
+                w<sub>j</sub> × 
+                <span class="inline-flex flex-col align-middle text-center mx-1">
+                  <span class="border-b border-sky-900 pb-0.5 text-[0.875em]">(f<sub>j</sub>* - f<sub>ij</sub>)</span>
+                  <span class="pt-0.5 text-[0.875em]">(f<sub>j</sub>* - f<sub>j</sub><sup>-</sup>)</span>
+                </span>
+                <span class="text-[1.25em] text-slate-500">]</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Q Value -->
+      <div class="bg-gradient-to-br from-sky-50 to-white border border-sky-400 rounded-xl overflow-hidden transition-shadow hover:shadow-md">
+        <div class="flex items-start gap-3.5 p-4 bg-slate-50 border-b border-slate-200">
+          <span class="w-8 h-8 min-w-[2rem] bg-gradient-to-br from-emerald-400 to-emerald-600 text-white rounded-lg flex items-center justify-center font-bold text-sm shrink-0">4</span>
+          <div class="flex-1 min-w-0">
+            <h5 class="text-[15px] font-bold text-slate-800 m-0 leading-snug">Nilai Q (Indeks VIKOR)</h5>
+            <p class="text-[13px] text-slate-500 mt-1 leading-relaxed">Kombinasi S dan R untuk peringkat akhir</p>
+          </div>
+        </div>
+        <div class="p-5">
+          <div class="flex flex-col md:flex-row gap-5">
+            <div class="flex-shrink-0 md:w-56">
+              <div class="flex items-center gap-2 p-3 bg-green-100 rounded-lg text-[13px] text-green-700 mb-3 border border-green-200">
+                <Star size={16} strokeWidth={2} class="shrink-0 text-green-600" />
+                <span>Nilai Q <strong>terendah</strong> = Ranking 1 (Terbaik)</span>
+              </div>
+              <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                <div class="flex justify-between text-[13px] py-1.5 text-slate-500">
+                  <span>v (Strategy weight)</span>
+                  <span class="font-mono text-sky-600 font-semibold">= 0.5</span>
+                </div>
+                <div class="flex justify-between text-[13px] py-1.5 text-slate-500">
+                  <span>(1-v)</span>
+                  <span class="font-mono text-sky-600 font-semibold">= 0.5</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="bg-gradient-to-br from-sky-50 to-sky-100 border border-sky-200 rounded-xl p-5 text-center overflow-x-auto">
+                <div class="font-serif text-base text-sky-900 leading-8 whitespace-nowrap">
+                  Q<sub>i</sub> = v × 
+                  <span class="inline-flex flex-col align-middle text-center mx-1">
+                    <span class="border-b border-sky-900 pb-0.5 text-[0.875em]">(S<sub>i</sub> - S*)</span>
+                    <span class="pt-0.5 text-[0.875em]">(S<sup>-</sup> - S*)</span>
+                  </span>
+                  + (1-v) × 
+                  <span class="inline-flex flex-col align-middle text-center mx-1">
+                    <span class="border-b border-sky-900 pb-0.5 text-[0.875em]">(R<sub>i</sub> - R*)</span>
+                    <span class="pt-0.5 text-[0.875em]">(R<sup>-</sup> - R*)</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Criteria Table -->
+    <div class="mt-6">
+      <div class="flex items-center gap-2.5 mb-4 pb-3 border-b-2 border-slate-200 text-sky-600">
+        <BarChart3 size={20} strokeWidth={2} />
+        <h4 class="text-base font-bold text-slate-800 m-0">Parameter Kriteria Penilaian</h4>
+      </div>
+      <div class="overflow-x-auto rounded-xl border border-slate-200">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr>
+              <th class="bg-slate-50 px-4 py-3.5 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide border-b border-slate-200 whitespace-nowrap">Kode</th>
+              <th class="bg-slate-50 px-4 py-3.5 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide border-b border-slate-200 whitespace-nowrap">Aspek Penilaian</th>
+              <th class="bg-slate-50 px-4 py-3.5 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide border-b border-slate-200 whitespace-nowrap">Tipe</th>
+              <th class="bg-slate-50 px-4 py-3.5 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide border-b border-slate-200 whitespace-nowrap">Bobot</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3.5 border-b border-slate-100 font-mono font-semibold text-sky-600">C1</td>
+              <td class="px-4 py-3.5 border-b border-slate-100 text-slate-700">Akumulasi Nilai Rapor</td>
+              <td class="px-4 py-3.5 border-b border-slate-100"><span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">Benefit</span></td>
+              <td class="px-4 py-3.5 border-b border-slate-100 font-mono text-center text-slate-500">0.30</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3.5 border-b border-slate-100 font-mono font-semibold text-sky-600">C2</td>
+              <td class="px-4 py-3.5 border-b border-slate-100 text-slate-700">Sikap & Kedisiplinan</td>
+              <td class="px-4 py-3.5 border-b border-slate-100"><span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">Benefit</span></td>
+              <td class="px-4 py-3.5 border-b border-slate-100 font-mono text-center text-slate-500">0.20</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3.5 border-b border-slate-100 font-mono font-semibold text-sky-600">C3</td>
+              <td class="px-4 py-3.5 border-b border-slate-100 text-slate-700">Jarak Lokasi (km)</td>
+              <td class="px-4 py-3.5 border-b border-slate-100"><span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-600">Cost</span></td>
+              <td class="px-4 py-3.5 border-b border-slate-100 font-mono text-center text-slate-500">0.10</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3.5 border-b border-slate-100 font-mono font-semibold text-sky-600">C4</td>
+              <td class="px-4 py-3.5 border-b border-slate-100 text-slate-700">Nilai Sertifikasi</td>
+              <td class="px-4 py-3.5 border-b border-slate-100"><span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">Benefit</span></td>
+              <td class="px-4 py-3.5 border-b border-slate-100 font-mono text-center text-slate-500">0.25</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3.5 font-mono font-semibold text-sky-600">C5</td>
+              <td class="px-4 py-3.5 text-slate-700">Rekomendasi Guru</td>
+              <td class="px-4 py-3.5"><span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">Benefit</span></td>
+              <td class="px-4 py-3.5 font-mono text-center text-slate-500">0.15</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Button -->
+  <div class="p-5 border-t border-slate-200 bg-slate-50">
+    <button id="btn-view-calculation" class="w-full flex items-center justify-between p-4 bg-gradient-to-r from-sky-500 to-sky-600 border-none rounded-xl text-white cursor-pointer transition-all shadow-lg shadow-sky-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-sky-500/40 group">
+      <span class="flex items-center gap-3.5">
+        <span class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center shrink-0">
+          <Search size={24} strokeWidth={2} />
+        </span>
+        <span class="text-left">
+          <span class="block text-base font-bold">Lihat Detail Perhitungan Siswa</span>
+          <span class="block text-xs opacity-85 mt-0.5">Simulasi langkah demi langkah per siswa</span>
+        </span>
+      </span>
+      <ArrowRight size={24} strokeWidth={2} class="shrink-0 transition-transform group-hover:translate-x-1" />
+    </button>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="calculation-modal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4" role="dialog" aria-modal="true">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm opacity-0 transition-opacity duration-300" id="modal-backdrop"></div>
+  
+  <div class="relative w-full max-w-4xl max-h-[90vh] z-[1]">
+    <div class="bg-white rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden transform scale-95 opacity-0 transition-all duration-300" id="modal-panel">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-4 border-b border-slate-200 bg-white shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-sky-100 rounded-lg flex items-center justify-center text-sky-600 shrink-0">
+            <BarChart3 size={24} strokeWidth={1.5} />
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-slate-800 m-0" id="modal-title">Simulasi Perhitungan</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Analisis detail VIKOR untuk setiap kandidat</p>
+          </div>
+        </div>
+        <button id="btn-close-modal" class="p-2 bg-transparent border-none rounded-lg text-slate-500 cursor-pointer transition-all flex items-center justify-center hover:bg-slate-100 hover:text-slate-800">
+          <X size={24} strokeWidth={2} />
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="flex-1 overflow-y-auto p-6 bg-slate-50" id="modal-content">
+        <!-- Selector Section -->
+        <div class="bg-white rounded-xl p-4 mb-6 border border-slate-200 shadow-sm">
+          <div class="flex items-center gap-2 mb-3 text-sky-600">
+            <User size={18} strokeWidth={2} />
+            <label class="text-[13px] font-bold text-slate-600 uppercase tracking-wide">Pilih Kandidat Siswa</label>
+          </div>
+          <div class="max-w-md">
+            <Dropdown 
+              id="student-selector" 
+              placeholder="-- Pilih siswa untuk analisis --" 
+              class="student-dropdown"
+            />
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-calculation-state" class="text-center py-16 px-8 bg-white rounded-xl border border-dashed border-slate-300">
+          <div class="text-slate-300 mb-4">
+            <ClipboardList size={64} strokeWidth={1} />
+          </div>
+          <h4 class="text-xl font-bold text-slate-600 mb-2">Belum ada data dipilih</h4>
+          <p class="text-sm text-slate-400 max-w-xs mx-auto leading-relaxed">Silakan pilih salah satu siswa dari dropdown di atas untuk melihat detail perhitungan.</p>
+        </div>
+
+        <!-- Student Detail Content -->
+        <div id="student-calculation-detail" class="hidden animate-slide-up">
+          <!-- Profile Card -->
+          <div class="bg-white rounded-xl p-6 border border-slate-200 mb-4">
+            <div class="mb-5 pb-4 border-b border-slate-100">
+              <div class="inline-flex items-center gap-1.5 text-[11px] font-bold text-sky-600 bg-sky-100 px-2.5 py-1 rounded-full mb-2 uppercase tracking-wide">
+                <User size={14} strokeWidth={2} />
+                <span>Kandidat</span>
+              </div>
+              <h2 class="text-2xl font-bold text-sky-900 m-0" id="detail-student-name">Nama Siswa</h2>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="bg-slate-50 p-4 rounded-xl text-center transition-colors border border-slate-200 hover:bg-slate-100">
+                <span class="block text-[11px] font-semibold text-slate-500 uppercase mb-1.5 tracking-wide">Nilai Rapor (C1)</span>
+                <span class="text-xl font-bold text-sky-600" id="detail-c1">-</span>
+              </div>
+              <div class="bg-slate-50 p-4 rounded-xl text-center transition-colors border border-slate-200 hover:bg-slate-100">
+                <span class="block text-[11px] font-semibold text-slate-500 uppercase mb-1.5 tracking-wide">Sikap (C2)</span>
+                <span class="text-xl font-bold text-sky-600" id="detail-c2">-</span>
+              </div>
+              <div class="bg-slate-50 p-4 rounded-xl text-center transition-colors border border-slate-200 hover:bg-slate-100">
+                <span class="block text-[11px] font-semibold text-slate-500 uppercase mb-1.5 tracking-wide">Sertifikasi (C4)</span>
+                <span class="text-xl font-bold text-sky-600" id="detail-c4">-</span>
+              </div>
+              <div class="bg-slate-50 p-4 rounded-xl text-center transition-colors border border-slate-200 hover:bg-slate-100">
+                <span class="block text-[11px] font-semibold text-slate-500 uppercase mb-1.5 tracking-wide">Rekomendasi (C5)</span>
+                <span class="text-xl font-bold text-sky-600" id="detail-c5">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Comparison Table -->
+          <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
+            <div class="flex items-center gap-2.5 p-4 bg-slate-50 border-b border-slate-200 text-sky-600">
+              <TrendingUp size={18} strokeWidth={2} />
+              <h5 class="text-sm font-bold text-slate-800 m-0">Perbandingan dengan Nilai Kebalikan</h5>
+            </div>
+            <div class="p-4 overflow-x-auto">
+              <table class="w-full border-collapse text-sm border border-slate-200 rounded-lg overflow-hidden">
+                <thead>
+                  <tr>
+                    <th class="px-6 py-4 text-center font-semibold text-slate-500 text-xs uppercase bg-slate-50 border-b-2 border-slate-200 tracking-wide w-[35%]">Kriteria</th>
+                    <th class="px-6 py-4 text-center font-semibold text-green-700 text-xs uppercase bg-gradient-to-b from-green-50 to-slate-50 border-b-2 border-slate-200 tracking-wide w-[22%]">Terbaik (f*)</th>
+                    <th class="px-6 py-4 text-center font-semibold text-red-600 text-xs uppercase bg-gradient-to-b from-red-50 to-slate-50 border-b-2 border-slate-200 tracking-wide w-[22%]">Terburuk (f-)</th>
+                    <th class="px-6 py-4 text-center font-semibold text-slate-500 text-xs uppercase bg-slate-50 border-b-2 border-slate-200 tracking-wide w-[21%]">Tipe</th>
+                  </tr>
+                </thead>
+                <tbody id="fvalues-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Results Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
+            <!-- Ranking Table -->
+            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+              <div class="flex items-center gap-2.5 p-4 bg-slate-50 border-b border-slate-200 text-sky-600">
+                <Trophy size={18} strokeWidth={2} />
+                <h5 class="text-sm font-bold text-slate-800 m-0">Hasil Perhitungan Akhir</h5>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full border-collapse text-[13px]">
+                  <thead>
+                    <tr>
+                      <th class="px-4 py-3 text-left font-semibold text-slate-500 text-[11px] uppercase bg-white border-b border-slate-200 tracking-wide">#</th>
+                      <th class="px-4 py-3 text-left font-semibold text-slate-500 text-[11px] uppercase bg-white border-b border-slate-200 tracking-wide">Alternatif DUDI</th>
+                      <th class="px-4 py-3 text-left font-semibold text-slate-500 text-[11px] uppercase bg-white border-b border-slate-200 tracking-wide">Jarak</th>
+                      <th class="px-4 py-3 text-left font-semibold text-slate-500 text-[11px] uppercase bg-white border-b border-slate-200 tracking-wide">S</th>
+                      <th class="px-4 py-3 text-left font-semibold text-slate-500 text-[11px] uppercase bg-white border-b border-slate-200 tracking-wide">R</th>
+                      <th class="px-4 py-3 text-left font-semibold text-slate-500 text-[11px] uppercase bg-white border-b border-slate-200 tracking-wide">Q</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ranking-table-body"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Recommendation Box -->
+            <div class="bg-gradient-to-br from-sky-500 to-sky-600 rounded-xl p-6 text-white flex flex-col">
+              <div class="flex items-center gap-2 mb-4 opacity-95">
+                <CheckCircle size={20} strokeWidth={2} class="shrink-0" />
+                <span class="text-[11px] font-bold uppercase tracking-wide">Hasil Rekomendasi</span>
+              </div>
+              <div id="detail-recommendation" class="flex-1 mb-4">
+                <p class="text-sm opacity-80 italic m-0">Pilih siswa untuk melihat rekomendasi.</p>
+              </div>
+              <button class="flex items-center justify-center gap-2 w-full py-3 bg-white/15 border border-white/20 rounded-lg text-white text-sm font-semibold cursor-pointer transition-colors hover:bg-white/25">
+                <Printer size={16} strokeWidth={2} />
+                <span>Cetak Laporan</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .animate-fade-in { animation: fade-in 0.3s ease; }
+  .animate-slide-up { animation: slide-up 0.4s ease; }
+  
+  #modal-backdrop.show { opacity: 1; }
+  #modal-panel.show { transform: scale(1); opacity: 1; }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggleBtn = document.getElementById('btn-toggle-formula');
+    const formulaContent = document.getElementById('formula-content');
+    const toggleText = document.getElementById('toggle-text');
+    const indicator = document.getElementById('icon-indicator');
+    
+    const viewCalcBtn = document.getElementById('btn-view-calculation');
+    const modal = document.getElementById('calculation-modal');
+    const modalBackdrop = document.getElementById('modal-backdrop');
+    const modalPanel = document.getElementById('modal-panel');
+    const closeModalBtn = document.getElementById('btn-close-modal');
+    
+    const studentDetail = document.getElementById('student-calculation-detail');
+    const emptyState = document.getElementById('empty-calculation-state');
+
+    toggleBtn?.addEventListener('click', () => {
+      if (!formulaContent) return;
+      
+      const isHidden = formulaContent.classList.contains('hidden');
+      
+      if (isHidden) {
+        formulaContent.classList.remove('hidden');
+        if (toggleText) toggleText.textContent = 'Sembunyikan Rumus';
+        if (indicator) indicator.style.transform = 'rotate(180deg)';
+      } else {
+        formulaContent.classList.add('hidden');
+        if (toggleText) toggleText.textContent = 'Tampilkan Rumus';
+        if (indicator) indicator.style.transform = 'rotate(0deg)';
+      }
+    });
+
+    const openModal = () => {
+      if (!(window as any).AppState?.vikorResults) {
+        alert('Belum ada hasil perhitungan. Silakan proses VIKOR terlebih dahulu.');
+        return;
+      }
+      
+      populateStudentSelector();
+      modal?.classList.remove('hidden');
+      modal?.classList.add('flex');
+      void modal?.offsetWidth;
+      
+      modalBackdrop?.classList.add('show');
+      modalPanel?.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    };
+
+    const closeModal = () => {
+      modalBackdrop?.classList.remove('show');
+      modalPanel?.classList.remove('show');
+      
+      setTimeout(() => {
+        modal?.classList.add('hidden');
+        modal?.classList.remove('flex');
+        document.body.style.overflow = '';
+      }, 300);
+    };
+
+    viewCalcBtn?.addEventListener('click', openModal);
+    closeModalBtn?.addEventListener('click', closeModal);
+    modalBackdrop?.addEventListener('click', closeModal);
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal?.classList.contains('hidden')) closeModal();
+    });
+
+    function populateStudentSelector() {
+      const results = (window as any).AppState?.vikorResults?.qualifiedResults || [];
+      const dropdownEl = document.querySelector('.custom-dropdown[data-dropdown-id="student-selector"]') as any;
+      
+      if (dropdownEl && dropdownEl._dropdown) {
+        const options = results.map((result: any, index: number) => ({
+          value: index.toString(),
+          label: result.siswa.nama
+        }));
+        
+        dropdownEl._dropdown.setOptions(options);
+      }
+    }
+
+    const hiddenSelect = document.querySelector('#student-selector.hidden') as HTMLSelectElement;
+    
+    if (hiddenSelect) {
+      hiddenSelect.addEventListener('change', (e) => {
+        const target = e.target as HTMLSelectElement;
+        const index = parseInt(target.value);
+        
+        if (isNaN(index)) {
+          studentDetail?.classList.add('hidden');
+          emptyState?.classList.remove('hidden');
+          return;
+        }
+
+        const results = (window as any).AppState?.vikorResults?.qualifiedResults || [];
+        const selected = results[index];
+        
+        if (selected) {
+          renderStudentDetail(selected);
+          emptyState?.classList.add('hidden');
+          studentDetail?.classList.remove('hidden');
+        }
+      });
+    }
+
+    function renderStudentDetail(result: any) {
+      const siswa = result.siswa;
+      const ranking = result.alternatifRanking;
+      const calcDetails = result.calculationDetails;
+      const best = result.rekomendasi;
+
+      const setText = (id: string, text: string) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+      };
+
+      setText('detail-student-name', siswa.nama);
+      setText('detail-c1', siswa.c1);
+      setText('detail-c2', siswa.c2);
+      setText('detail-c4', siswa.c4);
+      setText('detail-c5', siswa.c5);
+
+      const fValuesBody = document.getElementById('fvalues-table-body');
+      if (fValuesBody && calcDetails) {
+        const criteriaNames = calcDetails.criteriaNames || ['Akumulasi Nilai', 'Sikap', 'Jarak Magang', 'Sertifikasi', 'Rekomendasi'];
+        const criteriaTypes = calcDetails.criteriaTypes || ['Benefit', 'Benefit', 'Cost', 'Benefit', 'Benefit'];
+        const fBest = calcDetails.fBest || [];
+        const fWorst = calcDetails.fWorst || [];
+
+        fValuesBody.innerHTML = criteriaNames.map((name: string, i: number) => `
+          <tr class="hover:bg-slate-50 even:bg-slate-50/50">
+            <td class="px-6 py-4 text-center font-medium text-slate-700 border-b border-slate-100">${name}</td>
+            <td class="px-6 py-4 text-center font-mono font-semibold text-green-700 bg-gradient-to-b from-green-50/50 to-transparent border-b border-slate-100">${fBest[i] ?? '-'}</td>
+            <td class="px-6 py-4 text-center font-mono font-semibold text-red-600 bg-gradient-to-b from-red-50/50 to-transparent border-b border-slate-100">${fWorst[i] ?? '-'}</td>
+            <td class="px-6 py-4 text-center border-b border-slate-100">
+              <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold ${criteriaTypes[i] === 'Benefit' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}">${criteriaTypes[i]}</span>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      const rankingBody = document.getElementById('ranking-table-body');
+      if (rankingBody && ranking) {
+        rankingBody.innerHTML = ranking.map((alt: any) => {
+          const isTop = alt.ranking === 1;
+          return `
+            <tr class="${isTop ? 'bg-green-50' : ''} hover:bg-slate-50">
+              <td class="px-4 py-3 text-center border-b border-slate-100 ${isTop ? 'border-l-[3px] border-l-green-500' : ''}">
+                ${isTop 
+                  ? '<span class="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-full text-xs font-bold">1</span>'
+                  : `<span class="text-slate-500 font-mono">#${alt.ranking}</span>`
+                }
+              </td>
+              <td class="px-4 py-3 border-b border-slate-100 ${isTop ? 'font-semibold text-green-700' : 'font-medium text-slate-700'}">${alt.nama}</td>
+              <td class="px-4 py-3 text-center font-mono text-slate-500 text-[13px] border-b border-slate-100">${alt.jarak} km</td>
+              <td class="px-4 py-3 text-center font-mono text-sky-600 text-xs border-b border-slate-100">${typeof alt.s === 'number' ? alt.s.toFixed(3) : alt.s}</td>
+              <td class="px-4 py-3 text-center font-mono text-amber-600 text-xs border-b border-slate-100">${typeof alt.r === 'number' ? alt.r.toFixed(3) : alt.r}</td>
+              <td class="px-4 py-3 text-center font-mono font-semibold ${isTop ? 'text-green-700' : 'text-violet-600'} border-b border-slate-100">${typeof alt.q === 'number' ? alt.q.toFixed(4) : alt.q}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      const recEl = document.getElementById('detail-recommendation');
+      if (recEl && best) {
+        recEl.innerHTML = `
+          <div>
+            <p class="text-sm m-0 mb-2 opacity-90">Rekomendasi Terbaik:</p>
+            <p class="text-xl font-bold m-0 mb-2.5">${best.nama}</p>
+            <p class="text-[13px] opacity-85 m-0">Jarak: ${best.jarak} km • Skor Q: ${best.q}</p>
+          </div>
+        `;
+      }
+    }
+  });
+</script>

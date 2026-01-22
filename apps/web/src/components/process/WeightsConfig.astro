@@ -1,0 +1,99 @@
+---
+
+interface WeightConfig {
+  id: string;
+  label: string;
+  defaultValue: number;
+}
+
+const weights: WeightConfig[] = [
+  { id: 'c1', label: 'C1: Akumulasi Nilai', defaultValue: 0.30 },
+  { id: 'c2', label: 'C2: Penilaian Sikap', defaultValue: 0.20 },
+  { id: 'c3', label: 'C3: Jarak (Cost)', defaultValue: 0.10 },
+  { id: 'c4', label: 'C4: Sertifikasi', defaultValue: 0.25 },
+  { id: 'c5', label: 'C5: Rekomendasi', defaultValue: 0.15 },
+];
+---
+
+<div class="card-elevated mb-8" id="weights-config">
+  <h3 class="text-lg font-semibold text-primary-900 mb-4">Konfigurasi Bobot Kriteria</h3>
+  
+  <div class="grid sm:grid-cols-5 gap-4">
+    {weights.map(weight => (
+      <div>
+        <label class="label" for={`weight-${weight.id}`}>{weight.label}</label>
+        <input 
+          type="number" 
+          id={`weight-${weight.id}`} 
+          class="input weight-input" 
+          value={weight.defaultValue.toFixed(2)} 
+          step="0.05" 
+          min="0" 
+          max="1"
+          data-weight={weight.id}
+        />
+      </div>
+    ))}
+  </div>
+  
+  <div class="flex items-center justify-between mt-4">
+    <p id="weight-total" class="text-sm text-secondary-500">Total Bobot: 1.00</p>
+    <button id="btn-reset-weights" class="text-sm text-primary-600 hover:text-primary-800 underline">
+      Reset ke Default
+    </button>
+  </div>
+
+  <!-- Weight Info -->
+  <div class="mt-4 p-3 bg-secondary-50 rounded-lg">
+    <p class="text-xs text-secondary-600">
+      <strong>Keterangan:</strong> C1, C2, C4, C5 = Benefit (semakin tinggi semakin baik). 
+      C3 = Cost (semakin rendah/dekat semakin baik). Total bobot harus = 1.00
+    </p>
+  </div>
+</div>
+
+<script>
+  // Weight input validation and auto-sum calculation
+  document.addEventListener('DOMContentLoaded', () => {
+    const weightInputs = document.querySelectorAll<HTMLInputElement>('.weight-input');
+    const totalEl = document.getElementById('weight-total');
+    const resetBtn = document.getElementById('btn-reset-weights');
+    
+    const defaultWeights: Record<string, number> = {
+      c1: 0.30, c2: 0.20, c3: 0.10, c4: 0.25, c5: 0.15
+    };
+
+    function updateTotal(): void {
+      let total = 0;
+      weightInputs.forEach((input: HTMLInputElement) => {
+        total += parseFloat(input.value) || 0;
+      });
+      
+      if (totalEl) {
+        totalEl.textContent = `Total Bobot: ${total.toFixed(2)}`;
+        if (Math.abs(total - 1) < 0.01) {
+          totalEl.className = 'text-sm text-success-500';
+        } else {
+          totalEl.className = 'text-sm text-error-500';
+        }
+      }
+    }
+
+    weightInputs.forEach((input: HTMLInputElement) => {
+      input.addEventListener('input', updateTotal);
+    });
+
+    resetBtn?.addEventListener('click', () => {
+      weightInputs.forEach((input: HTMLInputElement) => {
+        const weightId = input.dataset.weight;
+        if (weightId && defaultWeights[weightId] !== undefined) {
+          input.value = defaultWeights[weightId].toFixed(2);
+        }
+      });
+      updateTotal();
+    });
+
+    // Initial calculation
+    updateTotal();
+  });
+</script>

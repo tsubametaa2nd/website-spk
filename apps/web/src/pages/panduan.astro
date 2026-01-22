@@ -1,0 +1,62 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Panduan Penggunaan - SPK VIKOR">
+  <section class="gradient-primary text-white py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h1 class="text-3xl md:text-4xl font-bold mb-4 text-white">Panduan Penggunaan</h1>
+      <p class="text-primary-100">Langkah-langkah menggunakan SPK VIKOR</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <div class="card-elevated">
+        <h2 class="text-xl font-semibold text-primary-900 mb-4">1. Siapkan Data Siswa</h2>
+        <p class="text-secondary-700 mb-4">Buat file CSV/Excel atau Google Sheets dengan kolom:</p>
+        <div class="overflow-x-auto bg-secondary-50 rounded-lg p-4">
+          <code class="text-sm">nama, c1, c2, c4, c5</code>
+        </div>
+        <p class="text-secondary-500 text-sm mt-2">Contoh: Ahmad Rizki, 85, 80, 78, 82</p>
+      </div>
+
+      <div class="card-elevated">
+        <h2 class="text-xl font-semibold text-primary-900 mb-4">2. Siapkan Data DUDI</h2>
+        <p class="text-secondary-700 mb-4">Buat file dengan kolom:</p>
+        <div class="overflow-x-auto bg-secondary-50 rounded-lg p-4">
+          <code class="text-sm">kode, nama, jarak</code>
+        </div>
+        <p class="text-secondary-500 text-sm mt-2">Contoh: A1, Bank BJB Syariah KC Jakarta, 5.2</p>
+      </div>
+
+      <div class="card-elevated">
+        <h2 class="text-xl font-semibold text-primary-900 mb-4">3. Upload atau Link Data</h2>
+        <ul class="space-y-2 text-secondary-700">
+          <li>• <strong>Google Sheets:</strong> Pastikan sheet bersifat publik, tempel link</li>
+          <li>• <strong>Upload:</strong> Pilih file CSV/Excel (.csv, .xls, .xlsx)</li>
+          <li>• <strong>Sampel:</strong> Gunakan data demo untuk pengujian</li>
+        </ul>
+      </div>
+
+      <div class="card-elevated">
+        <h2 class="text-xl font-semibold text-primary-900 mb-4">4. Atur Bobot Kriteria</h2>
+        <p class="text-secondary-700">Total bobot harus = 1.00 (100%). Default: C1=0.30, C2=0.20, C3=0.10, C4=0.25, C5=0.15</p>
+      </div>
+
+      <div class="card-elevated">
+        <h2 class="text-xl font-semibold text-primary-900 mb-4">5. Proses & Analisis</h2>
+        <p class="text-secondary-700">Klik "Proses Perhitungan VIKOR" untuk mendapatkan rekomendasi, grafik, dan narasi akademik.</p>
+      </div>
+
+      <div class="alert-info">
+        <svg class="w-6 h-6 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+        </svg>
+        <div>
+          <strong>Catatan:</strong> Siswa dengan C1 atau C4 di bawah 70 tidak akan diproses (tidak lolos seleksi awal).
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

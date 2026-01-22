@@ -1,0 +1,122 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Tentang Metode VIKOR - SPK Pemilihan Tempat Magang">
+  <section class="gradient-primary text-white py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h1 class="text-3xl md:text-4xl font-bold mb-4 text-white">Tentang Metode VIKOR</h1>
+      <p class="text-primary-100">VlseKriterijumska Optimizacija I Kompromisno Resenje</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="card-elevated mb-8">
+        <h2 class="text-xl font-semibold text-primary-900 mb-4">Apa itu Metode VIKOR?</h2>
+        <p class="text-secondary-700 mb-4">
+          VIKOR (VlseKriterijumska Optimizacija I Kompromisno Resenje) adalah metode pengambilan keputusan 
+          multi-kriteria yang dikembangkan oleh Serafim Opricovic pada tahun 1998. Metode ini berfokus pada 
+          perangkingan dan pemilihan dari sekumpulan alternatif dengan kriteria yang saling bertentangan.
+        </p>
+        <p class="text-secondary-700">
+          VIKOR menentukan solusi kompromi yang paling dekat dengan kondisi ideal, dengan mempertimbangkan 
+          kedekatan terhadap solusi ideal dan keseimbangan antar kriteria.
+        </p>
+      </div>
+
+      <div class="card-elevated mb-8">
+        <h2 class="text-xl font-semibold text-primary-900 mb-4">Langkah-langkah VIKOR</h2>
+        <ol class="space-y-4 text-secondary-700">
+          <li class="flex gap-4">
+            <span class="w-8 h-8 rounded-full bg-primary-100 text-primary-800 flex items-center justify-center font-bold shrink-0">1</span>
+            <div><strong>Normalisasi Matriks:</strong> Mengubah nilai kriteria ke skala yang sama agar dapat dibandingkan.</div>
+          </li>
+          <li class="flex gap-4">
+            <span class="w-8 h-8 rounded-full bg-primary-100 text-primary-800 flex items-center justify-center font-bold shrink-0">2</span>
+            <div><strong>Tentukan f* dan f-:</strong> Identifikasi nilai terbaik (f*) dan terburuk (f-) untuk setiap kriteria.</div>
+          </li>
+          <li class="flex gap-4">
+            <span class="w-8 h-8 rounded-full bg-primary-100 text-primary-800 flex items-center justify-center font-bold shrink-0">3</span>
+            <div><strong>Hitung Nilai S:</strong> Utility measure - mengukur jarak keseluruhan dari solusi ideal.</div>
+          </li>
+          <li class="flex gap-4">
+            <span class="w-8 h-8 rounded-full bg-primary-100 text-primary-800 flex items-center justify-center font-bold shrink-0">4</span>
+            <div><strong>Hitung Nilai R:</strong> Regret measure - mengukur penyesalan maksimum dari kriteria tunggal.</div>
+          </li>
+          <li class="flex gap-4">
+            <span class="w-8 h-8 rounded-full bg-primary-100 text-primary-800 flex items-center justify-center font-bold shrink-0">5</span>
+            <div><strong>Hitung Nilai Q:</strong> Indeks VIKOR yang menggabungkan S dan R dengan parameter v.</div>
+          </li>
+          <li class="flex gap-4">
+            <span class="w-8 h-8 rounded-full bg-accent-100 text-accent-800 flex items-center justify-center font-bold shrink-0">6</span>
+            <div><strong>Ranking:</strong> Urutkan alternatif berdasarkan Q (semakin kecil = semakin baik).</div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="card-elevated mb-8">
+        <h2 class="text-xl font-semibold text-primary-900 mb-4">Kriteria dalam Sistem Ini</h2>
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Kode</th>
+                <th>Kriteria</th>
+                <th>Tipe</th>
+                <th>Bobot Default</th>
+                <th>Keterangan</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="font-mono font-bold text-primary-800">C1</td>
+                <td>Akumulasi Nilai</td>
+                <td><span class="badge-success">Benefit</span></td>
+                <td>30%</td>
+                <td>Nilai Akuntansi Perbankan, Layanan Perbankan, Pengelolaan Kas, dan Perbankan Dasar</td>
+              </tr>
+              <tr>
+                <td class="font-mono font-bold text-primary-800">C2</td>
+                <td>Penilaian Sikap</td>
+                <td><span class="badge-success">Benefit</span></td>
+                <td>20%</td>
+                <td>Kedisiplinan, etika, dan perilaku siswa</td>
+              </tr>
+              <tr>
+                <td class="font-mono font-bold text-error-600">C3</td>
+                <td>Jarak</td>
+                <td><span class="badge-error">Cost</span></td>
+                <td>10%</td>
+                <td>Jarak tempat magang dari domisili (km)</td>
+              </tr>
+              <tr>
+                <td class="font-mono font-bold text-primary-800">C4</td>
+                <td>Nilai Sertifikasi</td>
+                <td><span class="badge-success">Benefit</span></td>
+                <td>25%</td>
+                <td>Pelatihan CS & Teller (syarat wajib ≥70)</td>
+              </tr>
+              <tr>
+                <td class="font-mono font-bold text-primary-800">C5</td>
+                <td>Rekomendasi Guru</td>
+                <td><span class="badge-success">Benefit</span></td>
+                <td>15%</td>
+                <td>Penilaian dari guru pembimbing</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card-elevated">
+        <h2 class="text-xl font-semibold text-primary-900 mb-4">Referensi Akademik</h2>
+        <ul class="space-y-2 text-secondary-700">
+          <li>• Opricovic, S. (1998). Multicriteria Optimization of Civil Engineering Systems. Faculty of Civil Engineering, Belgrade.</li>
+          <li>• Opricovic, S., & Tzeng, G. H. (2004). Compromise solution by MCDM methods: A comparative analysis of VIKOR and TOPSIS. European Journal of Operational Research.</li>
+          <li>• Opricovic, S., & Tzeng, G. H. (2007). Extended VIKOR method in comparison with other outranking methods. European Journal of Operational Research.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</Layout>

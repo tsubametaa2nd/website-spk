@@ -1,0 +1,229 @@
+---
+interface Props {
+  id: string;
+  placeholder?: string;
+  class?: string;
+  options?: Array<{ value: string; label: string }>;
+}
+
+const { 
+  id, 
+  placeholder = "Pilih opsi...", 
+  class: className = "",
+  options = []
+} = Astro.props;
+---
+
+<div class={`custom-dropdown relative ${className}`} data-dropdown-id={id}>
+  <select id={id} class="hidden" name={id}>
+    <option value="">{placeholder}</option>
+    {options.map(opt => (
+      <option value={opt.value}>{opt.label}</option>
+    ))}
+  </select>
+
+  <button 
+    type="button" 
+    class="dropdown-trigger w-full px-4 py-3 bg-white border border-secondary-300 rounded-xl text-left flex items-center justify-between transition-all duration-200 hover:border-primary-400 focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 group shadow-sm"
+    aria-haspopup="listbox"
+    aria-expanded="false"
+  >
+    <span class="dropdown-label text-secondary-500 truncate select-none">{placeholder}</span>
+    <div class="w-8 h-8 rounded-lg bg-secondary-50 text-secondary-400 flex items-center justify-center transition-all duration-200 group-hover:bg-primary-50 group-hover:text-primary-600">
+      <svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    </div>
+  </button>
+
+  <!-- Dropdown Menu -->
+  <div class="dropdown-menu absolute z-50 top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] border border-secondary-100 opacity-0 invisible transform scale-95 transition-all duration-200 origin-top">
+    <div class="py-2 max-h-60 overflow-y-auto custom-scrollbar dropdown-options" role="listbox">
+      {options.length > 0 ? options.map(opt => (
+        <div 
+          class="dropdown-option px-4 py-2.5 text-sm text-secondary-700 hover:bg-primary-50 hover:text-primary-700 cursor-pointer transition-colors flex items-center gap-2"
+          data-value={opt.value}
+          role="option"
+        >
+          {opt.label}
+        </div>
+      )) : (
+        <div class="px-4 py-3 text-sm text-secondary-400 text-center italic empty-message">
+          Tidak ada data
+        </div>
+      )}
+    </div>
+  </div>
+</div>
+
+<style>
+  .dropdown-menu.open {
+    @apply opacity-100 visible scale-100;
+  }
+  
+  .dropdown-trigger[aria-expanded="true"] svg {
+    @apply rotate-180;
+  }
+
+  .dropdown-trigger[aria-expanded="true"] {
+    @apply border-primary-500 ring-4 ring-primary-500/10;
+  }
+  
+  .dropdown-trigger, .dropdown-option {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-secondary-50 rounded-full my-2;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-secondary-200 rounded-full hover:bg-secondary-300;
+  }
+</style>
+
+<script>
+  class CustomDropdown {
+    container: HTMLElement;
+    trigger: HTMLElement;
+    menu: HTMLElement;
+    optionsContainer: HTMLElement;
+    hiddenSelect: HTMLSelectElement;
+    labelSpan: HTMLElement;
+    placeholder: string;
+    isOpen: boolean = false;
+
+    constructor(el: HTMLElement) {
+      this.container = el;
+      this.trigger = el.querySelector('.dropdown-trigger') as HTMLElement;
+      this.menu = el.querySelector('.dropdown-menu') as HTMLElement;
+      this.optionsContainer = el.querySelector('.dropdown-options') as HTMLElement;
+      this.hiddenSelect = el.querySelector('select') as HTMLSelectElement;
+      this.labelSpan = el.querySelector('.dropdown-label') as HTMLElement;
+      this.placeholder = this.labelSpan.textContent || 'Pilih opsi...';
+      
+      this.init();
+    }
+
+    init() {
+      this.trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.toggle();
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!this.container.contains(e.target as Node)) {
+          this.close();
+        }
+      });
+
+      this.bindOptions();
+
+      (this.container as any)._dropdown = this;
+    }
+
+    toggle() {
+      if (this.isOpen) this.close();
+      else this.open();
+    }
+
+    open() {
+      document.querySelectorAll('.custom-dropdown').forEach((el: any) => {
+        if (el !== this.container && el._dropdown) el._dropdown.close();
+      });
+
+      this.isOpen = true;
+      this.menu.classList.add('open');
+      this.trigger.setAttribute('aria-expanded', 'true');
+    }
+
+    close() {
+      this.isOpen = false;
+      this.menu.classList.remove('open');
+      this.trigger.setAttribute('aria-expanded', 'false');
+    }
+
+    bindOptions() {
+      const options = this.optionsContainer.querySelectorAll('.dropdown-option');
+      options.forEach(opt => {
+        opt.addEventListener('click', () => {
+          const value = opt.getAttribute('data-value');
+          const label = opt.textContent;
+          this.select(value, label);
+        });
+      });
+    }
+
+    select(value: string | null, label: string | null) {
+      if (value === null) return;
+      
+      this.hiddenSelect.value = value;
+      this.hiddenSelect.dispatchEvent(new Event('change', { bubbles: true })); // Trigger native change event
+
+      this.labelSpan.textContent = label || this.placeholder;
+      this.labelSpan.classList.remove('text-secondary-500');
+      this.labelSpan.classList.add('text-primary-900', 'font-medium');
+
+      const options = this.optionsContainer.querySelectorAll('.dropdown-option');
+      options.forEach(opt => {
+        if (opt.getAttribute('data-value') === value) {
+          opt.classList.add('bg-primary-50', 'text-primary-700', 'font-medium');
+        } else {
+          opt.classList.remove('bg-primary-50', 'text-primary-700', 'font-medium');
+        }
+      });
+      
+      this.close();
+    }
+
+
+    setOptions(options: Array<{ value: string; label: string }>) {
+      this.optionsContainer.innerHTML = '';
+      this.hiddenSelect.innerHTML = `<option value="">${this.placeholder}</option>`;
+
+      if (options.length === 0) {
+        this.optionsContainer.innerHTML = `
+          <div class="px-4 py-3 text-sm text-secondary-400 text-center italic empty-message">
+            Tidak ada data
+          </div>
+        `;
+        this.labelSpan.textContent = this.placeholder;
+        this.labelSpan.classList.add('text-secondary-500');
+        this.labelSpan.classList.remove('text-primary-900', 'font-medium');
+        this.hiddenSelect.value = "";
+        return;
+      }
+
+      options.forEach(opt => {
+        const div = document.createElement('div');
+        div.className = "dropdown-option px-4 py-2.5 text-sm text-secondary-700 hover:bg-primary-50 hover:text-primary-700 cursor-pointer transition-colors flex items-center gap-2";
+        div.setAttribute('data-value', opt.value);
+        div.textContent = opt.label;
+        this.optionsContainer.appendChild(div);
+
+        const option = document.createElement('option');
+        option.value = opt.value;
+        option.textContent = opt.label;
+        this.hiddenSelect.appendChild(option);
+      });
+
+      this.bindOptions();
+    }
+  }
+
+  function initDropdowns() {
+    document.querySelectorAll('.custom-dropdown').forEach(el => {
+      if (!(el as any)._dropdown) {
+        new CustomDropdown(el as HTMLElement);
+      }
+    });
+  }
+
+  initDropdowns();
+
+  document.addEventListener('astro:page-load', initDropdowns);
+</script>

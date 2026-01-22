@@ -1,135 +1,95 @@
-# Turborepo starter
+# SPK VIKOR - Sistem Pemilihan Tempat Magang
 
-This Turborepo starter is maintained by the Turborepo core team.
+Sistem Pendukung Keputusan (SPK) untuk **Pemilihan Tempat Magang (DUDI)** menggunakan metode **VIKOR** untuk Program Keahlian Layanan Perbankan.
 
-## Using this example
+## 🎯 Fitur Utama
 
-Run the following command:
+- **Input Data Fleksibel**: Google Sheets URL, upload CSV/Excel, atau data sampel
+- **Algoritma VIKOR**: Perhitungan S, R, Q dengan normalisasi otomatis
+- **Validasi Otomatis**: Filter siswa berdasarkan batas minimum C1 & C4 (≥70)
+- **Visualisasi**: Grafik distribusi dan perbandingan alternatif
+- **Narasi Akademik**: Output siap kutip untuk jurnal/laporan
+- **Export CSV**: Download hasil rekomendasi
 
-```sh
-npx create-turbo@latest
-```
-
-## What's inside?
-
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
+## 🏗️ Arsitektur
 
 ```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+web-spk/
+├── apps/
+│   ├── backend/          # Express.js API
+│   │   └── src/
+│   │       ├── index.js
+│   │       ├── routes/
+│   │       ├── services/
+│   │       └── middleware/
+│   └── web/              # Astro Frontend
+│       └── src/
+│           ├── layouts/
+│           ├── pages/
+│           └── styles/
+└── package.json          # Turborepo config
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+## 🚀 Setup Lokal
 
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
+### 1. Install Dependencies
 
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+```bash
+# Di root folder
+npm install
 ```
 
-### Develop
+### 2. Konfigurasi Environment
 
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+```bash
+# Copy .env.example ke .env di folder backend
+cp apps/backend/.env.example apps/backend/.env
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+### 3. Jalankan Development Server
 
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
+```bash
+# Jalankan backend & frontend bersamaan
+npm run dev
 
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+# Atau jalankan terpisah:
+cd apps/backend && npm run dev   # Backend: http://localhost:3001
+cd apps/web && npm run dev       # Frontend: http://localhost:4321
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+## 📊 Kriteria Penilaian
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+| Kode | Kriteria          | Tipe    | Bobot | Keterangan                 |
+| ---- | ----------------- | ------- | ----- | -------------------------- |
+| C1   | Akumulasi Nilai   | Benefit | 30%   | Nilai akademik (wajib ≥70) |
+| C2   | Penilaian Sikap   | Benefit | 20%   | Kedisiplinan & etika       |
+| C3   | Jarak             | Cost    | 10%   | Jarak tempuh (km)          |
+| C4   | Nilai Sertifikasi | Benefit | 25%   | CS & Teller (wajib ≥70)    |
+| C5   | Rekomendasi Guru  | Benefit | 15%   | Penilaian guru             |
 
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
+## 🏦 Alternatif DUDI Default
 
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
+- A1: Bank BJB Syariah KC Jakarta (Soepomo)
+- A2: Bank Jakarta KCP Matraman
+- A3: Bank BRI KCP Saharjo
+- A4: Bank Mandiri KCP Jatinegara
+- A5: Bank BNI KCP Tebet
 
-## Useful Links
+## 📡 API Endpoints
 
-Learn more about the power of Turborepo:
+| Method | Endpoint                   | Deskripsi                     |
+| ------ | -------------------------- | ----------------------------- |
+| POST   | `/api/process-vikor`       | Proses perhitungan VIKOR      |
+| POST   | `/api/parse-google-sheets` | Parse data dari Google Sheets |
+| POST   | `/api/upload-file`         | Upload file CSV/Excel         |
+| GET    | `/api/download-csv`        | Download hasil sebagai CSV    |
+| GET    | `/api/default-data`        | Data sampel untuk testing     |
 
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+## 📚 Referensi
+
+- Opricovic, S. (1998). Multicriteria Optimization of Civil Engineering Systems
+- Opricovic, S., & Tzeng, G. H. (2004). Compromise solution by MCDM methods
+
+---
+
+**© 2024 Program Keahlian Layanan Perbankan**

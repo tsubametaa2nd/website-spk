@@ -1,0 +1,47 @@
+---
+
+---
+
+<div class="card-elevated mb-8" id="results-table-section">
+  <div class="flex items-center justify-between mb-4 flex-wrap gap-4">
+    <h3 class="text-lg font-semibold text-primary-900">Hasil Rekomendasi per Siswa</h3>
+    <div class="flex gap-2">
+      <button id="btn-expand-all" class="btn-secondary text-sm py-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+        </svg>
+        Detail
+      </button>
+      <button id="btn-download" class="btn-accent">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        Download CSV
+      </button>
+    </div>
+  </div>
+  
+  <div class="table-container">
+    <table class="table" id="results-table">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Nama Siswa</th>
+          <th>C1</th>
+          <th>C2</th>
+          <th>C4</th>
+          <th>C5</th>
+          <th>Rekomendasi DUDI</th>
+          <th>Nilai Q</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+  
+  <p class="text-xs text-secondary-400 mt-3">
+    * Nilai Q menunjukkan indeks VIKOR. Semakin kecil nilai Q, semakin optimal rekomendasi.
+  </p>
+</div>

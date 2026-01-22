@@ -1,0 +1,47 @@
+---
+
+interface Props {
+  id?: string;
+}
+
+const { id = 'student-input' } = Astro.props;
+---
+
+<div class="card-elevated" id={id}>
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
+      <svg class="w-5 h-5 text-primary-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+      </svg>
+    </div>
+    <div>
+      <h2 class="text-lg font-semibold text-primary-900">Data Siswa</h2>
+      <p class="text-sm text-secondary-500">Input nilai kriteria siswa</p>
+    </div>
+  </div>
+
+  <div id="student-file">
+    <label class="label">Upload CSV/Excel</label>
+    <input type="file" id="student-file-input" accept=".csv,.xls,.xlsx" class="input file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary-100 file:text-primary-800 file:cursor-pointer" />
+    <button id="btn-upload-student" class="btn-primary w-full mt-4">Upload & Parse</button>
+  </div>
+
+  <div id="student-preview" class="mt-6 hidden">
+    <h4 class="font-medium text-secondary-700 mb-2">Preview Data Siswa</h4>
+    <div class="table-container max-h-48 overflow-y-auto">
+      <table class="table" id="student-table">
+        <thead>
+          <tr>
+            <th>Nama</th>
+            <th>C1</th>
+            <th>C2</th>
+            <th>C4</th>
+            <th>C5</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p id="student-count" class="text-sm text-secondary-500 mt-2"></p>
+  </div>
+</div>
