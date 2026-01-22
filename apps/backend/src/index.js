@@ -59,11 +59,14 @@ app.get("/", (req, res) => {
 
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`
-Yoo!
-  `);
-});
-
+// Export app for Vercel serverless
 export default app;
+
+// Start server only if not in Vercel (serverless) environment
+if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`
+Yoo! SPK VIKOR API is running on port ${PORT}
+    `);
+  });
+}
