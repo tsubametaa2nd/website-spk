@@ -14,39 +14,21 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-const allowedOrigins = [
-  // "http://localhost:4321",
-  "https://website-spk-web.vercel.app",
-  process.env.CORS_ORIGIN,
-].filter(Boolean);
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:4321",
+      "http://127.0.0.1:4321",
+      "https://website-spk-web.vercel.app",
+      process.env.CORS_ORIGIN,
+    ].filter(Boolean),
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  }),
+);
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, Postman)
-    if (!origin) return callback(null, true);
-
-    // Check if origin is in allowed list
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      console.log(`✓ CORS allowed: ${origin}`);
-      return callback(null, true);
-    }
-
-    // Allow all Vercel preview deployments (*.vercel.app)
-    if (origin.endsWith(".vercel.app")) {
-      console.log(`✓ CORS allowed (Vercel): ${origin}`);
-      return callback(null, true);
-    }
-
-    // Block all other origins
-    console.warn(`⚠️  CORS blocked: ${origin}`);
-    callback(new Error("Not allowed by CORS"));
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use("/api", vikorRoutes);
