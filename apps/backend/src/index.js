@@ -16,20 +16,31 @@ const PORT = process.env.PORT || 3001;
 
 const allowedOrigins = [
   "http://localhost:4321",
+  "http://localhost:3000",
   "https://website-spk-web.vercel.app",
   process.env.CORS_ORIGIN,
 ].filter(Boolean);
 
 const corsOptions = {
   origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, Postman)
     if (!origin) return callback(null, true);
 
+    // Check if origin is in allowed list
     if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      console.warn(`CORS blocked origin: ${origin}`);
-      callback(new Error("Not allowed by CORS"));
+      console.log(`✓ CORS allowed: ${origin}`);
+      return callback(null, true);
     }
+
+    // Allow all Vercel preview deployments (*.vercel.app)
+    if (origin.endsWith(".vercel.app")) {
+      console.log(`✓ CORS allowed (Vercel): ${origin}`);
+      return callback(null, true);
+    }
+
+    // Block all other origins
+    console.warn(`⚠️  CORS blocked: ${origin}`);
+    callback(new Error("Not allowed by CORS"));
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
