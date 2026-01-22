@@ -1,5 +1,6 @@
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.PUBLIC_API_URL || "website-spk-backend.vercel.app",
+  BASE_URL:
+    import.meta.env.PUBLIC_API_URL || "https://website-spk-backend.vercel.app",
 
   TIMEOUT: 30000,
 
@@ -11,6 +12,10 @@ export const API_CONFIG = {
     "Content-Type": "application/json",
   },
 } as const;
+
+export function getApiUrl(): string {
+  return API_CONFIG.BASE_URL;
+}
 
 export const API_ENDPOINTS = {
   HEALTH: "/health",

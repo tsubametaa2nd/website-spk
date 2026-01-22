@@ -17,7 +17,7 @@ export default defineConfig({
   vite: {
     define: {
       "import.meta.env.PUBLIC_API_URL": JSON.stringify(
-        process.env.PUBLIC_API_URL || "http://localhost:3001",
+        process.env.PUBLIC_API_URL || "https://website-spk-backend.vercel.app",
       ),
     },
   },

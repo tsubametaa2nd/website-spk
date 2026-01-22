@@ -124,7 +124,7 @@ const { id = 'sheets-input' } = Astro.props;
     const statusDiv = document.getElementById('sheets-status');
     const previewDiv = document.getElementById('sheets-preview');
     
-    const API_URL = window.API_URL || 'http://localhost:3001';
+    const API_URL = window.API_URL || 'https://website-spk-backend.vercel.app';
     
     function extractSheetId(input: string): string {
       if (!input) return '';

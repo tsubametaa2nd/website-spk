@@ -7,21 +7,45 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function getGoogleSheetsClient() {
-  const credentialsPath =
-    process.env.GOOGLE_SHEETS_CREDENTIALS || "./credentials.json";
-  const absoluteCredPath = path.resolve(
-    path.dirname(__dirname),
-    "..",
-    credentialsPath,
-  );
+  let credentials;
 
-  if (!fs.existsSync(absoluteCredPath)) {
-    throw new Error(
-      `File credentials tidak ditemukan: ${absoluteCredPath}. Pastikan file credentials.json ada di direktori backend.`,
+  if (process.env.GOOGLE_SHEETS_CREDENTIALS) {
+    try {
+      credentials = JSON.parse(process.env.GOOGLE_SHEETS_CREDENTIALS);
+      console.log("✓ Loaded credentials from environment variable");
+    } catch (parseError) {
+      const credPath = path.resolve(
+        path.dirname(__dirname),
+        "..",
+        process.env.GOOGLE_SHEETS_CREDENTIALS,
+      );
+
+      if (!fs.existsSync(credPath)) {
+        throw new Error(
+          `File credentials tidak ditemukan: ${credPath}. Pastikan GOOGLE_SHEETS_CREDENTIALS berisi JSON string atau path yang valid.`,
+        );
+      }
+
+      credentials = JSON.parse(fs.readFileSync(credPath, "utf8"));
+      console.log("✓ Loaded credentials from file path:", credPath);
+    }
+  } else {
+    const defaultCredPath = path.resolve(
+      path.dirname(__dirname),
+      "..",
+      "credentials.json",
     );
-  }
 
-  const credentials = JSON.parse(fs.readFileSync(absoluteCredPath, "utf8"));
+    if (!fs.existsSync(defaultCredPath)) {
+      throw new Error(
+        `File credentials.json tidak ditemukan di: ${defaultCredPath}. ` +
+          `Untuk production, set environment variable GOOGLE_SHEETS_CREDENTIALS dengan JSON credentials.`,
+      );
+    }
+
+    credentials = JSON.parse(fs.readFileSync(defaultCredPath, "utf8"));
+    console.log("✓ Loaded credentials from default file:", defaultCredPath);
+  }
 
   const auth = new google.auth.GoogleAuth({
     credentials,

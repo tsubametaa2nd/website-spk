@@ -98,7 +98,6 @@ export class HttpClient {
       try {
         const response = await this.fetchWithTimeout(url, init, timeout);
 
-        // Parse response
         const contentType = response.headers.get("content-type");
         let data: unknown;
 

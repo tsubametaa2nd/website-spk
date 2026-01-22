@@ -1,19 +1,11 @@
-/**
- * SPK VIKOR Application Script
- * Script utama untuk mengelola state dan interaksi aplikasi
- */
+const API_URL = window.API_URL || "https://website-spk-backend.vercel.app";
 
-// API Configuration
-const API_URL = "http://localhost:3001";
-
-// Application State
 const AppState = {
   studentData: [],
   dudiData: [],
   vikorResults: null,
   isProcessing: false,
 
-  // State setters with callbacks
   setStudentData(data) {
     this.studentData = data;
     this.onDataChange();
@@ -72,7 +64,6 @@ const AppState = {
   },
 };
 
-// Tab Switching Handler
 function initTabs() {
   document.querySelectorAll(".tab").forEach((tab) => {
     tab.addEventListener("click", (e) => {
@@ -92,7 +83,6 @@ function initTabs() {
   });
 }
 
-// Preview Renderers
 function renderStudentPreview() {
   const tbody = document.querySelector("#student-table tbody");
   if (tbody) {
