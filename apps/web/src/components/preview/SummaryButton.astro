@@ -4,19 +4,15 @@ import { FileText, Download, ChartBar, Users, Award } from 'lucide-astro';
 ---
 
 <div id="summary-button-section" class="mt-8 px-2 hidden">
-  <!-- Divider -->
   <div class="flex items-center gap-4 mb-6">
     <div class="flex-1 h-0.5 bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
     <span class="text-sm font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Kesimpulan & Laporan</span>
     <div class="flex-1 h-0.5 bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
   </div>
   
-  <!-- Summary Card -->
   <div class="relative overflow-hidden bg-gradient-to-br from-sky-50 via-sky-100 to-sky-50 border-2 border-sky-500 rounded-3xl p-8 shadow-lg shadow-sky-500/15">
-    <!-- Background decoration -->
     <div class="absolute -top-1/2 -right-1/2 w-full h-full bg-[radial-gradient(circle,rgba(14,165,233,0.1)_0%,transparent_70%)] pointer-events-none"></div>
     
-    <!-- Header -->
     <div class="relative flex items-start gap-5 mb-6">
       <div class="w-16 h-16 bg-gradient-to-br from-sky-600 to-sky-700 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-sky-600/30 shrink-0">
         <FileText size={32} strokeWidth={1.5} />
@@ -30,7 +26,6 @@ import { FileText, Download, ChartBar, Users, Award } from 'lucide-astro';
       </div>
     </div>
     
-    <!-- Features -->
     <div class="relative flex flex-wrap gap-4 mb-6 p-4 bg-white/70 rounded-xl">
       <div class="flex items-center gap-2 px-3.5 py-2 bg-white rounded-full text-[0.8125rem] font-medium text-sky-600 shadow-sm border border-sky-200">
         <ChartBar size={18} strokeWidth={2} />
@@ -46,9 +41,7 @@ import { FileText, Download, ChartBar, Users, Award } from 'lucide-astro';
       </div>
     </div>
     
-    <!-- Button -->
     <button id="btn-open-summary" class="group relative w-full flex items-center justify-between px-6 py-4 bg-gradient-to-br from-sky-600 to-sky-700 rounded-xl text-white text-base font-semibold cursor-pointer transition-all duration-300 shadow-lg shadow-sky-600/30 overflow-hidden hover:-translate-y-0.5 hover:shadow-xl hover:shadow-sky-600/40 active:translate-y-0">
-      <!-- Shine effect -->
       <div class="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-[left] duration-500 group-hover:left-full"></div>
       
       <span class="flex items-center gap-3">
@@ -62,7 +55,6 @@ import { FileText, Download, ChartBar, Users, Award } from 'lucide-astro';
   </div>
 </div>
 
-<!-- Responsive Styles -->
 <style>
   @media (max-width: 640px) {
     #summary-button-section .relative.overflow-hidden {

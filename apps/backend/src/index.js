@@ -20,7 +20,7 @@ app.use(
       "http://localhost:3000",
       "http://localhost:4321",
       "http://127.0.0.1:4321",
-      "https://website-spk-web.vercel.app", // Removed trailing slash
+      "https://website-spk-web.vercel.app",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: [

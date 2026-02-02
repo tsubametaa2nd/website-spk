@@ -172,16 +172,8 @@ export async function fetchJarakData(sheetId) {
 }
 
 /**
- * Fetch Kapasitas (capacity) data from the Kapasitas sheet
- * Sheet structure (based on user's spreadsheet):
- * - Row 1: Header (No | Bank | Kapasitas)
- * - Row 2-6: Data (bank names and capacity)
- * - Row 7: Total row (should be skipped)
- * - Column B = Bank names
- * - Column C = Student capacity per bank
- *
- * @param {string} sheetId - Google Sheets ID
- * @returns {Object} Capacity data per bank
+ * @param {string} sheetId
+ * @returns {Object}
  */
 export async function fetchKapasitasData(sheetId) {
   try {
@@ -195,8 +187,6 @@ export async function fetchKapasitasData(sheetId) {
     console.log("📊 Fetching Kapasitas data from sheet...");
     console.log("📊 Using spreadsheetId:", spreadsheetId);
 
-    // Read directly from Kapasitas sheet, starting from row 2 to skip header
-    // Range B2:C100 will get bank names (B) and capacity (C)
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: "Kapasitas!B2:C100",
@@ -204,12 +194,10 @@ export async function fetchKapasitasData(sheetId) {
 
     const rows = response.data.values;
 
-    console.log("📊 Kapasitas raw response:", JSON.stringify(rows, null, 2));
+    console.log("Kapasitas raw response:", JSON.stringify(rows, null, 2));
 
     if (!rows || rows.length === 0) {
-      console.warn(
-        '⚠️ Sheet "Kapasitas" kosong, menggunakan kapasitas default',
-      );
+      console.warn('Sheet "Kapasitas" kosong, menggunakan kapasitas default');
       return {
         success: false,
         data: {
@@ -224,18 +212,15 @@ export async function fetchKapasitasData(sheetId) {
     const kapasitasPerBank = {};
     let totalKapasitas = 0;
 
-    // Process each row - skip rows with "Total" or empty bank names
     rows.forEach((row, index) => {
       const bankName = row[0] ? String(row[0]).trim() : "";
       const kapasitasValue = row[1] ? String(row[1]).trim() : "0";
 
-      // Skip empty rows, "Total" row, or rows without valid bank name
       if (!bankName || bankName.toLowerCase() === "total") {
         console.log(`  [Skipped row ${index + 2}]: "${bankName}"`);
         return;
       }
 
-      // Parse capacity - handle both string and number
       const kapasitas = parseInt(kapasitasValue.replace(",", ".")) || 0;
 
       console.log(`  ✓ Row ${index + 2}: "${bankName}" = ${kapasitas} siswa`);
@@ -259,7 +244,6 @@ export async function fetchKapasitasData(sheetId) {
   } catch (error) {
     console.error("Error fetching Kapasitas data:", error.message);
     console.error("   Full error:", error);
-    // Return empty data instead of throwing - kapasitas is optional enhancement
     return {
       success: false,
       data: {
@@ -284,14 +268,13 @@ export async function fetchCompleteData(sheetId) {
     const { alternatives, jarakPerSiswa } = jarakResult.data;
     const { kapasitasPerBank, totalKapasitas } = kapasitasResult.data;
 
-    console.log("📊 Merging kapasitas data with alternatives...");
-    console.log("📊 Kapasitas per bank:", kapasitasPerBank);
+    console.log("Merging kapasitas data with alternatives...");
+    console.log("Kapasitas per bank:", kapasitasPerBank);
     console.log(
-      "📊 Alternatives:",
+      "Alternatives:",
       alternatives.map((a) => a.nama),
     );
 
-    // Helper function to normalize bank name for matching
     const normalizeBankName = (name) => {
       return name
         .toLowerCase()

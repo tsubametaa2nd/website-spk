@@ -299,7 +299,6 @@ function processStudentVIKOR(student, alternatives, weights, v) {
 
   const bestAlternative = alternativesWithScores[0];
 
-  // Validasi Solusi Kompromi VIKOR
   const compromiseValidation = validateCompromiseSolution(
     alternativesWithScores,
     sValues,
@@ -436,20 +435,6 @@ function roundTo(num, decimals) {
   return Math.round(num * Math.pow(10, decimals)) / Math.pow(10, decimals);
 }
 
-/**
- * Validasi Solusi Kompromi VIKOR
- *
- * Kondisi 1 (Acceptable Advantage - C1):
- * Q(A₂) - Q(A₁) ≥ DQ, dimana DQ = 1/(n-1), n = jumlah alternatif
- *
- * Kondisi 2 (Acceptable Stability - C2):
- * Alternatif A₁ harus juga menjadi yang terbaik berdasarkan nilai S atau R
- *
- * Jika kedua kondisi terpenuhi: A₁ adalah solusi kompromi tunggal
- * Jika hanya C2 tidak terpenuhi: A₁ dan A₂ keduanya adalah solusi kompromi
- * Jika C1 tidak terpenuhi: A₁, A₂, ..., Aₘ adalah solusi kompromi,
- *   dimana Aₘ adalah alternatif maksimum yang memenuhi Q(Aₘ) - Q(A₁) < DQ
- */
 function validateCompromiseSolution(
   rankedAlternatives,
   sValues,
@@ -470,18 +455,13 @@ function validateCompromiseSolution(
     };
   }
 
-  // Hitung DQ (threshold acceptable advantage)
   const dq = roundTo(1 / (n - 1), 4);
 
-  // Alternatif dengan Q terkecil (terbaik)
   const a1 = rankedAlternatives[0];
   const a2 = rankedAlternatives[1];
 
-  // Hitung perbedaan Q antara A1 dan A2
   const qDifference = roundTo(a2.q - a1.q, 4);
 
-  // Kondisi 1: Acceptable Advantage
-  // Q(A₂) - Q(A₁) ≥ DQ
   const condition1Satisfied = qDifference >= dq;
   const condition1 = {
     satisfied: condition1Satisfied,
@@ -495,17 +475,12 @@ function validateCompromiseSolution(
       : `Keuntungan tidak cukup signifikan (selisih Q = ${qDifference} < DQ = ${dq})`,
   };
 
-  // Kondisi 2: Acceptable Stability
-  // A1 harus juga terbaik di S atau R
-
-  // Cari indeks alternatif dalam array original untuk mendapatkan S dan R yang benar
   const getOriginalIndex = (alt) => {
     return originalAlternatives.findIndex(
       (orig) => orig.kode === alt.kode || orig.nama === alt.nama,
     );
   };
 
-  // Cari alternatif dengan S minimum
   let minSIndex = 0;
   let minSValue = Infinity;
   for (let i = 0; i < rankedAlternatives.length; i++) {
@@ -516,7 +491,6 @@ function validateCompromiseSolution(
     }
   }
 
-  // Cari alternatif dengan R minimum
   let minRIndex = 0;
   let minRValue = Infinity;
   for (let i = 0; i < rankedAlternatives.length; i++) {

@@ -1,5 +1,4 @@
 export const errorHandler = (err, req, res, next) => {
-  // Log error for debugging
   console.error("Error occurred:", {
     message: err.message,
     stack: err.stack,
@@ -7,7 +6,6 @@ export const errorHandler = (err, req, res, next) => {
     method: req.method,
   });
 
-  // Ensure statusCode is valid
   const statusCode =
     err.statusCode && err.statusCode >= 400 && err.statusCode < 600
       ? err.statusCode
@@ -15,12 +13,9 @@ export const errorHandler = (err, req, res, next) => {
 
   const message = err.message || "Internal Server Error";
 
-  // Check if headers have already been sent
   if (res.headersSent) {
     return next(err);
   }
-
-  // Send error response
   return res.status(statusCode).json({
     success: false,
     error: {

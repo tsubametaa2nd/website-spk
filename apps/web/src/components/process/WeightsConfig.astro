@@ -43,7 +43,6 @@ const weights: WeightConfig[] = [
     </button>
   </div>
 
-  <!-- Weight Info -->
   <div class="mt-4 p-3 bg-secondary-50 rounded-lg">
     <p class="text-xs text-secondary-600">
       <strong>Keterangan:</strong> C1, C2, C4, C5 = Benefit (semakin tinggi semakin baik). 
@@ -53,7 +52,6 @@ const weights: WeightConfig[] = [
 </div>
 
 <script>
-  // Weight input validation and auto-sum calculation
   document.addEventListener('DOMContentLoaded', () => {
     const weightInputs = document.querySelectorAll<HTMLInputElement>('.weight-input');
     const totalEl = document.getElementById('weight-total');
@@ -93,7 +91,6 @@ const weights: WeightConfig[] = [
       updateTotal();
     });
 
-    // Initial calculation
     updateTotal();
   });
 </script>
