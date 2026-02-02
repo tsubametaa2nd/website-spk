@@ -1,5 +1,6 @@
 ---
 import Dropdown from '../ui/dropdown.astro';
+import CompromiseValidation from './CompromiseValidation.astro';
 import { 
   Calculator, 
   Lightbulb, 
@@ -427,6 +428,7 @@ import {
                 <span>Cetak Laporan</span>
               </button>
             </div>
+          <CompromiseValidation />
           </div>
         </div>
       </div>
@@ -543,6 +545,9 @@ import {
         if (isNaN(index)) {
           studentDetail?.classList.add('hidden');
           emptyState?.classList.remove('hidden');
+          if ((window as any).hideCompromiseValidation) {
+            (window as any).hideCompromiseValidation();
+          }
           return;
         }
 
@@ -624,6 +629,10 @@ import {
             <p class="text-[13px] opacity-85 m-0">Jarak: ${best.jarak} km • Skor Q: ${best.q}</p>
           </div>
         `;
+      }
+
+      if (result.compromiseValidation && (window as any).renderCompromiseValidation) {
+        (window as any).renderCompromiseValidation(result.compromiseValidation);
       }
     }
   });

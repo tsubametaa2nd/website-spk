@@ -145,6 +145,7 @@ export function calculateVIKOR(
         pilihanUtama,
       ),
       calculationDetails: studentData.calculationDetails,
+      compromiseValidation: studentData.compromiseValidation,
       overallScore: studentData.overallScore,
     });
   }
@@ -298,6 +299,14 @@ function processStudentVIKOR(student, alternatives, weights, v) {
 
   const bestAlternative = alternativesWithScores[0];
 
+  // Validasi Solusi Kompromi VIKOR
+  const compromiseValidation = validateCompromiseSolution(
+    alternativesWithScores,
+    sValues,
+    rValues,
+    alternatives,
+  );
+
   return {
     siswa: {
       nama: student.nama,
@@ -319,7 +328,12 @@ function processStudentVIKOR(student, alternatives, weights, v) {
         "Sertifikasi (C4)",
         "Rekomendasi (C5)",
       ],
+      sMin: roundTo(sMin, 4),
+      sMax: roundTo(sMax, 4),
+      rMin: roundTo(rMin, 4),
+      rMax: roundTo(rMax, 4),
     },
+    compromiseValidation,
   };
 }
 
@@ -420,6 +434,160 @@ function getDisqualificationReason(student, thresholdC1, thresholdC4) {
 
 function roundTo(num, decimals) {
   return Math.round(num * Math.pow(10, decimals)) / Math.pow(10, decimals);
+}
+
+/**
+ * Validasi Solusi Kompromi VIKOR
+ *
+ * Kondisi 1 (Acceptable Advantage - C1):
+ * Q(A₂) - Q(A₁) ≥ DQ, dimana DQ = 1/(n-1), n = jumlah alternatif
+ *
+ * Kondisi 2 (Acceptable Stability - C2):
+ * Alternatif A₁ harus juga menjadi yang terbaik berdasarkan nilai S atau R
+ *
+ * Jika kedua kondisi terpenuhi: A₁ adalah solusi kompromi tunggal
+ * Jika hanya C2 tidak terpenuhi: A₁ dan A₂ keduanya adalah solusi kompromi
+ * Jika C1 tidak terpenuhi: A₁, A₂, ..., Aₘ adalah solusi kompromi,
+ *   dimana Aₘ adalah alternatif maksimum yang memenuhi Q(Aₘ) - Q(A₁) < DQ
+ */
+function validateCompromiseSolution(
+  rankedAlternatives,
+  sValues,
+  rValues,
+  originalAlternatives,
+) {
+  const n = rankedAlternatives.length;
+
+  if (n < 2) {
+    return {
+      isValid: true,
+      condition1: { satisfied: true, description: "Hanya ada satu alternatif" },
+      condition2: { satisfied: true, description: "Hanya ada satu alternatif" },
+      compromiseSet: rankedAlternatives,
+      conclusion: "Solusi kompromi valid (alternatif tunggal)",
+      dq: null,
+      qDifference: null,
+    };
+  }
+
+  // Hitung DQ (threshold acceptable advantage)
+  const dq = roundTo(1 / (n - 1), 4);
+
+  // Alternatif dengan Q terkecil (terbaik)
+  const a1 = rankedAlternatives[0];
+  const a2 = rankedAlternatives[1];
+
+  // Hitung perbedaan Q antara A1 dan A2
+  const qDifference = roundTo(a2.q - a1.q, 4);
+
+  // Kondisi 1: Acceptable Advantage
+  // Q(A₂) - Q(A₁) ≥ DQ
+  const condition1Satisfied = qDifference >= dq;
+  const condition1 = {
+    satisfied: condition1Satisfied,
+    qA1: a1.q,
+    qA2: a2.q,
+    qDifference: qDifference,
+    dq: dq,
+    formula: `Q(A₂) - Q(A₁) = ${a2.q} - ${a1.q} = ${qDifference} ${condition1Satisfied ? "≥" : "<"} ${dq} = DQ`,
+    description: condition1Satisfied
+      ? `Keuntungan yang dapat diterima terpenuhi (selisih Q = ${qDifference} ≥ DQ = ${dq})`
+      : `Keuntungan tidak cukup signifikan (selisih Q = ${qDifference} < DQ = ${dq})`,
+  };
+
+  // Kondisi 2: Acceptable Stability
+  // A1 harus juga terbaik di S atau R
+
+  // Cari indeks alternatif dalam array original untuk mendapatkan S dan R yang benar
+  const getOriginalIndex = (alt) => {
+    return originalAlternatives.findIndex(
+      (orig) => orig.kode === alt.kode || orig.nama === alt.nama,
+    );
+  };
+
+  // Cari alternatif dengan S minimum
+  let minSIndex = 0;
+  let minSValue = Infinity;
+  for (let i = 0; i < rankedAlternatives.length; i++) {
+    const origIdx = getOriginalIndex(rankedAlternatives[i]);
+    if (origIdx !== -1 && sValues[origIdx] < minSValue) {
+      minSValue = sValues[origIdx];
+      minSIndex = i;
+    }
+  }
+
+  // Cari alternatif dengan R minimum
+  let minRIndex = 0;
+  let minRValue = Infinity;
+  for (let i = 0; i < rankedAlternatives.length; i++) {
+    const origIdx = getOriginalIndex(rankedAlternatives[i]);
+    if (origIdx !== -1 && rValues[origIdx] < minRValue) {
+      minRValue = rValues[origIdx];
+      minRIndex = i;
+    }
+  }
+
+  const a1BestInS = minSIndex === 0;
+  const a1BestInR = minRIndex === 0;
+  const condition2Satisfied = a1BestInS || a1BestInR;
+
+  const bestSAlt = rankedAlternatives[minSIndex];
+  const bestRAlt = rankedAlternatives[minRIndex];
+
+  const condition2 = {
+    satisfied: condition2Satisfied,
+    a1BestInS: a1BestInS,
+    a1BestInR: a1BestInR,
+    bestInS: { nama: bestSAlt?.nama, s: bestSAlt?.s },
+    bestInR: { nama: bestRAlt?.nama, r: bestRAlt?.r },
+    description: condition2Satisfied
+      ? `Stabilitas terpenuhi: A₁ (${a1.nama}) adalah yang terbaik dalam ${a1BestInS && a1BestInR ? "S dan R" : a1BestInS ? "S" : "R"}`
+      : `Stabilitas tidak terpenuhi: A₁ bukan yang terbaik dalam S (terbaik: ${bestSAlt?.nama}) maupun R (terbaik: ${bestRAlt?.nama})`,
+  };
+
+  // Tentukan compromise set
+  let compromiseSet = [];
+  let conclusion = "";
+  let isValid = true;
+
+  if (condition1Satisfied && condition2Satisfied) {
+    // Kedua kondisi terpenuhi
+    compromiseSet = [a1];
+    conclusion = `Solusi kompromi VALID: ${a1.nama} adalah solusi kompromi tunggal karena memenuhi kedua kondisi`;
+    isValid = true;
+  } else if (!condition1Satisfied) {
+    // C1 tidak terpenuhi: compromise set termasuk semua alternatif dengan Q(Am) - Q(A1) < DQ
+    compromiseSet = rankedAlternatives.filter((alt) => alt.q - a1.q < dq);
+    conclusion = `Solusi kompromi GANDA: ${compromiseSet.map((a) => a.nama).join(", ")} memiliki keuntungan yang setara karena C1 tidak terpenuhi`;
+    isValid = false;
+  } else if (!condition2Satisfied) {
+    // Hanya C2 tidak terpenuhi
+    compromiseSet = [a1, a2];
+    conclusion = `Solusi kompromi GANDA: ${a1.nama} dan ${a2.nama} karena C2 (stabilitas) tidak terpenuhi`;
+    isValid = false;
+  }
+
+  return {
+    isValid: isValid,
+    condition1: condition1,
+    condition2: condition2,
+    compromiseSet: compromiseSet.map((alt) => ({
+      nama: alt.nama,
+      kode: alt.kode,
+      q: alt.q,
+      s: alt.s,
+      r: alt.r,
+      ranking: alt.ranking,
+    })),
+    dq: dq,
+    qDifference: qDifference,
+    conclusion: conclusion,
+    formula: {
+      dq: `DQ = 1/(n-1) = 1/(${n}-1) = ${dq}`,
+      c1: condition1.formula,
+      c2: `A₁ terbaik di S: ${a1BestInS ? "Ya" : "Tidak"}, A₁ terbaik di R: ${a1BestInR ? "Ya" : "Tidak"}`,
+    },
+  };
 }
 
 export function validateStudentData(students) {

@@ -1,0 +1,268 @@
+---
+
+import { CheckCircle, XCircle, AlertTriangle, Scale, Award, Info } from 'lucide-astro';
+---
+
+<div id="compromise-validation-section" class="hidden mt-4">
+  <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div class="flex items-center justify-between gap-3 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-slate-200">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
+          <Scale size={20} class="text-indigo-600" />
+        </div>
+        <div>
+          <h5 class="text-sm font-bold text-slate-800 m-0">Validasi Solusi Kompromi</h5>
+          <p class="text-xs text-slate-500 mt-0.5">Pengujian kondisi C1 & C2 metode VIKOR</p>
+        </div>
+      </div>
+      <div id="validation-status-badge" class="px-3 py-1 rounded-full text-xs font-semibold">
+      </div>
+    </div>
+
+    <div class="p-4 space-y-4">
+      <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+        <div class="flex items-center gap-2 mb-2">
+          <Info size={16} class="text-slate-500" />
+          <span class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Threshold DQ (Acceptable Advantage)</span>
+        </div>
+        <div class="bg-white rounded-lg p-3 text-center border border-slate-200">
+          <div class="font-mono text-sm text-slate-700">
+            DQ = <span class="inline-flex flex-col align-middle text-center mx-1">
+              <span class="border-b border-slate-400 px-2">1</span>
+              <span class="px-2">n - 1</span>
+            </span>
+            = <span id="dq-formula" class="font-semibold text-indigo-600"></span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div id="condition1-card" class="rounded-xl border-2 p-4 transition-all">
+          <div class="flex items-center gap-2 mb-3">
+            <div id="condition1-icon" class="w-8 h-8 rounded-lg flex items-center justify-center">
+            </div>
+            <div>
+              <h6 class="text-sm font-bold text-slate-700 m-0">Kondisi 1 (C1)</h6>
+              <p class="text-[11px] text-slate-500">Acceptable Advantage</p>
+            </div>
+          </div>
+          
+          <div class="bg-white rounded-lg p-3 border border-slate-200 mb-3">
+            <p class="text-xs text-slate-500 mb-2">Rumus: Q(A₂) - Q(A₁) ≥ DQ</p>
+            <div class="font-mono text-sm text-slate-700" id="condition1-formula">
+                          </div>
+          </div>
+          
+          <p id="condition1-description" class="text-xs text-slate-600 leading-relaxed">
+          </p>
+        </div>
+
+        <div id="condition2-card" class="rounded-xl border-2 p-4 transition-all">
+          <div class="flex items-center gap-2 mb-3">
+            <div id="condition2-icon" class="w-8 h-8 rounded-lg flex items-center justify-center">
+            </div>
+            <div>
+              <h6 class="text-sm font-bold text-slate-700 m-0">Kondisi 2 (C2)</h6>
+              <p class="text-[11px] text-slate-500">Acceptable Stability</p>
+            </div>
+          </div>
+          
+          <div class="bg-white rounded-lg p-3 border border-slate-200 mb-3">
+            <p class="text-xs text-slate-500 mb-2">Syarat: A₁ harus terbaik di S atau R</p>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="flex items-center gap-1.5 p-2 bg-slate-50 rounded">
+                <span id="c2-best-s-icon" class="w-4 h-4 rounded-full flex items-center justify-center text-white text-[10px] font-bold">
+                </span>
+                <span class="text-slate-600">Terbaik di S</span>
+              </div>
+              <div class="flex items-center gap-1.5 p-2 bg-slate-50 rounded">
+                <span id="c2-best-r-icon" class="w-4 h-4 rounded-full flex items-center justify-center text-white text-[10px] font-bold">
+                </span>
+                <span class="text-slate-600">Terbaik di R</span>
+              </div>
+            </div>
+          </div>
+          
+          <p id="condition2-description" class="text-xs text-slate-600 leading-relaxed">
+          </p>
+        </div>
+      </div>
+
+      <div id="compromise-conclusion" class="rounded-xl p-4 border-2">
+        <div class="flex items-start gap-3">
+          <div id="conclusion-icon" class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0">
+          </div>
+          <div class="flex-1">
+            <h6 id="conclusion-title" class="text-sm font-bold mb-1">Kesimpulan</h6>
+            <p id="conclusion-text" class="text-sm leading-relaxed">
+            </p>
+          </div>
+        </div>
+        
+        <div id="compromise-set-container" class="mt-4 pt-4 border-t border-slate-200 hidden">
+          <p class="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">Himpunan Solusi Kompromi:</p>
+          <div id="compromise-set-list" class="flex flex-wrap gap-2">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (window as any).renderCompromiseValidation = function(validation: any) {
+    const section = document.getElementById('compromise-validation-section');
+    if (!section || !validation) return;
+    
+    section.classList.remove('hidden');
+    
+    const statusBadge = document.getElementById('validation-status-badge');
+    if (statusBadge) {
+      if (validation.isValid) {
+        statusBadge.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700';
+        statusBadge.innerHTML = '✓ Valid';
+      } else {
+        statusBadge.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700';
+        statusBadge.innerHTML = '⚠ Ganda';
+      }
+    }
+
+    const dqFormula = document.getElementById('dq-formula');
+    if (dqFormula && validation.formula) {
+      dqFormula.textContent = validation.dq;
+    }
+    const c1Card = document.getElementById('condition1-card');
+    const c1Icon = document.getElementById('condition1-icon');
+    const c1Formula = document.getElementById('condition1-formula');
+    const c1Desc = document.getElementById('condition1-description');
+    
+    if (c1Card && validation.condition1) {
+      const c1 = validation.condition1;
+      if (c1.satisfied) {
+        c1Card.className = 'rounded-xl border-2 p-4 transition-all border-green-300 bg-green-50/50';
+        if (c1Icon) {
+          c1Icon.className = 'w-8 h-8 rounded-lg flex items-center justify-center bg-green-100';
+          c1Icon.innerHTML = '<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+        }
+      } else {
+        c1Card.className = 'rounded-xl border-2 p-4 transition-all border-amber-300 bg-amber-50/50';
+        if (c1Icon) {
+          c1Icon.className = 'w-8 h-8 rounded-lg flex items-center justify-center bg-amber-100';
+          c1Icon.innerHTML = '<svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+        }
+      }
+      
+      if (c1Formula) {
+        c1Formula.innerHTML = `
+          <span class="text-slate-500">Q(A₂) - Q(A₁)</span> = 
+          <span class="text-indigo-600">${c1.qA2}</span> - 
+          <span class="text-indigo-600">${c1.qA1}</span> = 
+          <span class="font-bold ${c1.satisfied ? 'text-green-600' : 'text-amber-600'}">${c1.qDifference}</span>
+          <span class="${c1.satisfied ? 'text-green-600' : 'text-amber-600'}">${c1.satisfied ? '≥' : '<'}</span>
+          <span class="text-purple-600">${c1.dq}</span>
+        `;
+      }
+      
+      if (c1Desc) {
+        c1Desc.textContent = c1.description;
+      }
+    }
+
+    const c2Card = document.getElementById('condition2-card');
+    const c2Icon = document.getElementById('condition2-icon');
+    const c2BestS = document.getElementById('c2-best-s-icon');
+    const c2BestR = document.getElementById('c2-best-r-icon');
+    const c2Desc = document.getElementById('condition2-description');
+    
+    if (c2Card && validation.condition2) {
+      const c2 = validation.condition2;
+      if (c2.satisfied) {
+        c2Card.className = 'rounded-xl border-2 p-4 transition-all border-green-300 bg-green-50/50';
+        if (c2Icon) {
+          c2Icon.className = 'w-8 h-8 rounded-lg flex items-center justify-center bg-green-100';
+          c2Icon.innerHTML = '<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+        }
+      } else {
+        c2Card.className = 'rounded-xl border-2 p-4 transition-all border-amber-300 bg-amber-50/50';
+        if (c2Icon) {
+          c2Icon.className = 'w-8 h-8 rounded-lg flex items-center justify-center bg-amber-100';
+          c2Icon.innerHTML = '<svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+        }
+      }
+      
+      if (c2BestS) {
+        c2BestS.className = `w-4 h-4 rounded-full flex items-center justify-center text-white text-[10px] font-bold ${c2.a1BestInS ? 'bg-green-500' : 'bg-slate-300'}`;
+        c2BestS.textContent = c2.a1BestInS ? '✓' : '✗';
+      }
+      
+      if (c2BestR) {
+        c2BestR.className = `w-4 h-4 rounded-full flex items-center justify-center text-white text-[10px] font-bold ${c2.a1BestInR ? 'bg-green-500' : 'bg-slate-300'}`;
+        c2BestR.textContent = c2.a1BestInR ? '✓' : '✗';
+      }
+      
+      if (c2Desc) {
+        c2Desc.textContent = c2.description;
+      }
+    }
+
+    // Conclusion
+    const conclusionBox = document.getElementById('compromise-conclusion');
+    const conclusionIcon = document.getElementById('conclusion-icon');
+    const conclusionTitle = document.getElementById('conclusion-title');
+    const conclusionText = document.getElementById('conclusion-text');
+    const compromiseSetContainer = document.getElementById('compromise-set-container');
+    const compromiseSetList = document.getElementById('compromise-set-list');
+    
+    if (conclusionBox) {
+      if (validation.isValid) {
+        conclusionBox.className = 'rounded-xl p-4 border-2 border-green-300 bg-gradient-to-r from-green-50 to-emerald-50';
+        if (conclusionIcon) {
+          conclusionIcon.className = 'w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-green-100';
+          conclusionIcon.innerHTML = '<svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+        }
+        if (conclusionTitle) {
+          conclusionTitle.className = 'text-sm font-bold mb-1 text-green-800';
+          conclusionTitle.textContent = '✓ Solusi Kompromi Tunggal';
+        }
+      } else {
+        conclusionBox.className = 'rounded-xl p-4 border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50';
+        if (conclusionIcon) {
+          conclusionIcon.className = 'w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-amber-100';
+          conclusionIcon.innerHTML = '<svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
+        }
+        if (conclusionTitle) {
+          conclusionTitle.className = 'text-sm font-bold mb-1 text-amber-800';
+          conclusionTitle.textContent = '⚠ Solusi Kompromi Ganda';
+        }
+      }
+      
+      if (conclusionText) {
+        conclusionText.className = `text-sm leading-relaxed ${validation.isValid ? 'text-green-700' : 'text-amber-700'}`;
+        conclusionText.textContent = validation.conclusion;
+      }
+    }
+
+    // Compromise Set
+    if (compromiseSetContainer && compromiseSetList && validation.compromiseSet) {
+      if (validation.compromiseSet.length > 1 || !validation.isValid) {
+        compromiseSetContainer.classList.remove('hidden');
+        compromiseSetList.innerHTML = validation.compromiseSet.map((alt: any) => `
+          <div class="inline-flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 shadow-sm">
+            <span class="w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xs font-bold">${alt.ranking}</span>
+            <span class="text-sm font-medium text-slate-700">${alt.nama}</span>
+            <span class="text-xs text-slate-400">Q=${alt.q}</span>
+          </div>
+        `).join('');
+      } else {
+        compromiseSetContainer.classList.add('hidden');
+      }
+    }
+  };
+
+  (window as any).hideCompromiseValidation = function() {
+    const section = document.getElementById('compromise-validation-section');
+    if (section) {
+      section.classList.add('hidden');
+    }
+  };
+</script>
