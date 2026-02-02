@@ -1,27 +1,3 @@
-/**
- * VIKOR Method Implementation
- * Metode VlseKriterijumska Optimizacija I Kompromisno Resenje
- *
- * VIKOR adalah metode pengambilan keputusan multi-kriteria yang berfokus pada
- * perangkingan dan pemilihan dari sekumpulan alternatif dengan kriteria yang saling bertentangan.
- *
- * Langkah-langkah VIKOR:
- * 1. Normalisasi matriks keputusan
- * 2. Tentukan nilai terbaik (f*) dan terburuk (f-) untuk setiap kriteria
- * 3. Hitung nilai S (utility measure) dan R (regret measure)
- * 4. Hitung nilai Q (VIKOR index)
- * 5. Ranking berdasarkan Q (semakin kecil semakin baik)
- */
-
-/**
- * Calculate VIKOR analysis for student placement
- * @param {Array} students - Array of student data with criteria values
- * @param {Array} alternatives - Array of DUDI alternatives with distance data
- * @param {Array} weights - Bobot kriteria [C1, C2, C3, C4, C5]
- * @param {number} v - Parameter strategi (default 0.5 = konsensus)
- * @param {Object} jarakPerSiswa - Optional: Object berisi jarak per siswa ke setiap alternatif
- * @returns {Object} VIKOR calculation results
- */
 export function calculateVIKOR(
   students,
   alternatives,
@@ -31,23 +7,38 @@ export function calculateVIKOR(
 ) {
   const results = [];
 
-  // Filter students who meet minimum threshold (C1 >= 70 and C4 >= 70)
-  const threshold = parseFloat(process.env.MIN_THRESHOLD) || 70;
+  const thresholdC1 =
+    parseFloat(process.env.MIN_THRESHOLD_C1) ||
+    parseFloat(process.env.MIN_THRESHOLD) ||
+    75;
+  const thresholdC4 =
+    parseFloat(process.env.MIN_THRESHOLD_C4) ||
+    parseFloat(process.env.MIN_THRESHOLD) ||
+    80;
+
   const qualifiedStudents = students.filter(
-    (student) => student.c1 >= threshold && student.c4 >= threshold,
+    (student) => student.c1 >= thresholdC1 && student.c4 >= thresholdC4,
   );
 
   const disqualifiedStudents = students.filter(
-    (student) => student.c1 < threshold || student.c4 < threshold,
+    (student) => student.c1 < thresholdC1 || student.c4 < thresholdC4,
   );
 
-  // Process each qualified student
+  const kapasitasTracker = {};
+  alternatives.forEach((alt) => {
+    kapasitasTracker[alt.nama] = {
+      total: alt.kapasitas || 999,
+      used: 0,
+      remaining: alt.kapasitas || 999,
+    };
+  });
+
+  const studentsWithScores = [];
+
   for (const student of qualifiedStudents) {
-    // Jika ada data jarak per siswa, gunakan itu; jika tidak, gunakan jarak default dari alternatif
     let studentAlternatives = alternatives;
 
     if (jarakPerSiswa && jarakPerSiswa[student.nama]) {
-      // Buat alternatives dengan jarak spesifik untuk siswa ini
       const jarakSiswa = jarakPerSiswa[student.nama];
       studentAlternatives = alternatives.map((alt) => ({
         ...alt,
@@ -57,7 +48,6 @@ export function calculateVIKOR(
             : alt.jarak || 0,
       }));
     } else if (student.jarakKeBanks) {
-      // Jika siswa memiliki property jarakKeBanks langsung
       studentAlternatives = alternatives.map((alt) => ({
         ...alt,
         jarak:
@@ -73,8 +63,102 @@ export function calculateVIKOR(
       weights,
       v,
     );
-    results.push(studentResult);
+
+    const overallScore = calculateOverallStudentScore(student);
+
+    studentsWithScores.push({
+      ...studentResult,
+      overallScore,
+      studentAlternatives,
+    });
   }
+
+  studentsWithScores.sort((a, b) => b.overallScore - a.overallScore);
+
+  for (const studentData of studentsWithScores) {
+    const { alternatifRanking, siswa } = studentData;
+    let assigned = false;
+    let finalRekomendasi = null;
+
+    const pilihanUtama = alternatifRanking[0];
+    let dipindahkanDari = null;
+    let alasanPindah = null;
+    for (const alt of alternatifRanking) {
+      const tracker = kapasitasTracker[alt.nama];
+
+      if (tracker && tracker.remaining > 0) {
+        tracker.used += 1;
+        tracker.remaining -= 1;
+
+        if (alt.nama !== pilihanUtama.nama) {
+          dipindahkanDari = pilihanUtama;
+          alasanPindah = `Kapasitas ${pilihanUtama.nama} sudah penuh (${kapasitasTracker[pilihanUtama.nama]?.total || 0} siswa)`;
+        }
+
+        finalRekomendasi = {
+          ...alt,
+          kapasitasInfo: {
+            totalKapasitas: tracker.total,
+            terpakai: tracker.used,
+            sisaTersedia: tracker.remaining,
+          },
+          pilihanUtama: pilihanUtama.nama,
+          dipindahkan: alt.nama !== pilihanUtama.nama,
+          dipindahkanDari: dipindahkanDari?.nama || null,
+          alasanPindah: alasanPindah,
+        };
+        assigned = true;
+        break;
+      }
+    }
+
+    if (!assigned && alternatifRanking.length > 0) {
+      const bestAlt = alternatifRanking[0];
+      const tracker = kapasitasTracker[bestAlt.nama];
+
+      finalRekomendasi = {
+        ...bestAlt,
+        kapasitasInfo: {
+          totalKapasitas: tracker?.total || 0,
+          terpakai: tracker?.used || 0,
+          sisaTersedia: 0,
+          overKapasitas: true,
+        },
+        pilihanUtama: pilihanUtama.nama,
+        dipindahkan: false,
+        dipindahkanDari: null,
+        alasanPindah: "Semua tempat magang sudah penuh kapasitasnya",
+      };
+    }
+
+    results.push({
+      siswa: studentData.siswa,
+      alternatifRanking: studentData.alternatifRanking,
+      rekomendasi: finalRekomendasi,
+      pilihanUtama: pilihanUtama,
+      narasi: generateNarrative(
+        studentData.siswa,
+        finalRekomendasi,
+        studentData.alternatifRanking,
+        thresholdC1,
+        thresholdC4,
+        pilihanUtama,
+      ),
+      calculationDetails: studentData.calculationDetails,
+      overallScore: studentData.overallScore,
+    });
+  }
+
+  const kapasitasSummary = Object.entries(kapasitasTracker).map(
+    ([nama, data]) => ({
+      nama,
+      totalKapasitas: data.total,
+      terisi: data.used,
+      sisaTersedia: data.remaining,
+      persentaseTerisi:
+        data.total > 0 ? Math.round((data.used / data.total) * 100) : 0,
+    }),
+  );
 
   return {
     qualifiedResults: results,
@@ -82,37 +166,45 @@ export function calculateVIKOR(
       nama: s.nama,
       c1: s.c1,
       c4: s.c4,
-      reason: getDisqualificationReason(s, threshold),
+      reason: getDisqualificationReason(s, thresholdC1, thresholdC4),
     })),
+    kapasitasSummary,
     metadata: {
       totalStudents: students.length,
       qualifiedCount: qualifiedStudents.length,
       disqualifiedCount: disqualifiedStudents.length,
       weights,
-      threshold,
+      thresholds: {
+        c1: thresholdC1,
+        c4: thresholdC4,
+      },
       vParameter: v,
     },
   };
 }
 
-/**
- * Process VIKOR for a single student across all alternatives
- */
+function calculateOverallStudentScore(student) {
+  const weights = { c1: 0.3, c2: 0.25, c4: 0.3, c5: 0.15 };
+
+  return (
+    student.c1 * weights.c1 +
+    student.c2 * weights.c2 +
+    student.c4 * weights.c4 +
+    student.c5 * weights.c5
+  );
+}
+
 function processStudentVIKOR(student, alternatives, weights, v) {
-  // Build decision matrix for this student
-  // Each row = one alternative, columns = [C1, C2, C3, C4, C5]
   const matrix = alternatives.map((alt) => [
-    student.c1, // C1: Akumulasi Nilai
-    student.c2, // C2: Penilaian Sikap
-    alt.jarak, // C3: Jarak (cost - semakin kecil semakin baik)
-    student.c4, // C4: Nilai Sertifikasi
-    student.c5, // C5: Rekomendasi Guru
+    student.c1,
+    student.c2,
+    alt.jarak,
+    student.c4,
+    student.c5,
   ]);
 
-  // Criteria types: true = benefit (higher is better), false = cost (lower is better)
-  const criteriaTypes = [true, true, false, true, true]; // C3 is cost
+  const criteriaTypes = [true, true, false, true, true];
 
-  // Step 1-2: Find best (f*) and worst (f-) values for each criterion
   const numCriteria = 5;
   const fBest = [];
   const fWorst = [];
@@ -120,17 +212,14 @@ function processStudentVIKOR(student, alternatives, weights, v) {
   for (let j = 0; j < numCriteria; j++) {
     const columnValues = matrix.map((row) => row[j]);
     if (criteriaTypes[j]) {
-      // Benefit criterion: max is best, min is worst
       fBest.push(Math.max(...columnValues));
       fWorst.push(Math.min(...columnValues));
     } else {
-      // Cost criterion: min is best, max is worst
       fBest.push(Math.min(...columnValues));
       fWorst.push(Math.max(...columnValues));
     }
   }
 
-  // Step 3: Calculate S and R values for each alternative
   const sValues = [];
   const rValues = [];
 
@@ -145,10 +234,8 @@ function processStudentVIKOR(student, alternatives, weights, v) {
       let normalizedValue = 0;
       if (denominator !== 0) {
         if (criteriaTypes[j]) {
-          // Benefit: (f* - fij) / (f* - f-)
           normalizedValue = (fBest[j] - fij) / denominator;
         } else {
-          // Cost: (fij - f*) / (f- - f*)
           normalizedValue = (fij - fBest[j]) / (fWorst[j] - fBest[j]);
         }
       }
@@ -162,7 +249,6 @@ function processStudentVIKOR(student, alternatives, weights, v) {
     rValues.push(r);
   }
 
-  // Step 4: Calculate Q values
   const sMin = Math.min(...sValues);
   const sMax = Math.max(...sValues);
   const rMin = Math.min(...rValues);
@@ -187,11 +273,11 @@ function processStudentVIKOR(student, alternatives, weights, v) {
     qValues.push(q);
   }
 
-  // Step 5: Create ranking based on Q (lower Q = better rank)
   const alternativesWithScores = alternatives.map((alt, idx) => ({
     kode: alt.kode,
     nama: alt.nama,
     jarak: alt.jarak,
+    kapasitas: alt.kapasitas || 0,
     s: roundTo(sValues[idx], 4),
     r: roundTo(rValues[idx], 4),
     q: roundTo(qValues[idx], 4),
@@ -204,15 +290,12 @@ function processStudentVIKOR(student, alternatives, weights, v) {
     },
   }));
 
-  // Sort by Q value (ascending - lower is better)
   alternativesWithScores.sort((a, b) => a.q - b.q);
 
-  // Assign ranks
   alternativesWithScores.forEach((alt, idx) => {
     alt.ranking = idx + 1;
   });
 
-  // Get best alternative (lowest Q)
   const bestAlternative = alternativesWithScores[0];
 
   return {
@@ -225,7 +308,6 @@ function processStudentVIKOR(student, alternatives, weights, v) {
     },
     alternatifRanking: alternativesWithScores,
     rekomendasi: bestAlternative,
-    narasi: generateNarrative(student, bestAlternative, alternativesWithScores),
     calculationDetails: {
       fBest: fBest.map((v) => roundTo(v, 4)),
       fWorst: fWorst.map((v) => roundTo(v, 4)),
@@ -241,49 +323,96 @@ function processStudentVIKOR(student, alternatives, weights, v) {
   };
 }
 
-function generateNarrative(student, bestAlt, allAlts) {
-  const ordinal = ["pertama", "kedua", "ketiga", "keempat", "kelima"];
-
+function generateNarrative(
+  student,
+  bestAlt,
+  allAlts,
+  thresholdC1,
+  thresholdC4,
+  pilihanUtama = null,
+) {
   const narrativeParts = [
     `Berdasarkan analisis menggunakan metode VIKOR (VlseKriterijumska Optimizacija I Kompromisno Resenje), `,
-    `siswa ${student.nama} direkomendasikan untuk melaksanakan Program Kerja Industri (Prakerin) di `,
+    `siswa **${student.nama}** direkomendasikan untuk melaksanakan Program Kerja Industri (Prakerin) di `,
     `**${bestAlt.nama}** (${bestAlt.kode}).`,
     `\n\n`,
+  ];
+
+  if (bestAlt.dipindahkan && bestAlt.dipindahkanDari) {
+    narrativeParts.push(
+      `**Informasi Pemindahan:** Pilihan utama siswa berdasarkan analisis VIKOR adalah **${bestAlt.pilihanUtama}**, `,
+      `namun karena kapasitas tempat tersebut sudah maksimal, siswa dipindahkan ke **${bestAlt.nama}** `,
+      `yang masih memiliki slot tersedia.`,
+      `\n\n`,
+    );
+  }
+
+  if (bestAlt.kapasitasInfo) {
+    if (bestAlt.kapasitasInfo.overKapasitas) {
+      narrativeParts.push(
+        `**Perhatian:** Semua tempat magang sudah mencapai kapasitas maksimal. `,
+        `Siswa ini memerlukan penanganan khusus untuk penempatan.`,
+        `\n\n`,
+      );
+    } else {
+      narrativeParts.push(
+        `Kapasitas tersedia: ${bestAlt.kapasitasInfo.sisaTersedia} dari ${bestAlt.kapasitasInfo.totalKapasitas} slot.`,
+        `\n\n`,
+      );
+    }
+  }
+
+  narrativeParts.push(
     `Rekomendasi ini didasarkan pada nilai indeks VIKOR (Q) terendah sebesar **${bestAlt.q}**, `,
     `yang menunjukkan kompromi optimal antara kriteria benefit (Akumulasi Nilai, Penilaian Sikap, `,
     `Nilai Sertifikasi, dan Rekomendasi Guru) dengan kriteria cost (Jarak tempuh).`,
     `\n\n`,
-    `Profil akademik ${student.nama}: Akumulasi Nilai = ${student.c1}, Penilaian Sikap = ${student.c2}, `,
-    `Nilai Sertifikasi = ${student.c4}, dan Rekomendasi Guru = ${student.c5}.`,
+    `**Profil Akademik ${student.nama}:**\n`,
+    `- Akumulasi Nilai (C1): ${student.c1} (min. ${thresholdC1})\n`,
+    `- Penilaian Sikap (C2): ${student.c2}\n`,
+    `- Nilai Sertifikasi (C4): ${student.c4} (min. ${thresholdC4})\n`,
+    `- Rekomendasi Guru (C5): ${student.c5}\n`,
+    `- Jarak ke ${bestAlt.nama}: ${bestAlt.jarak} km`,
     `\n\n`,
-    `Urutan peringkat alternatif berdasarkan nilai Q:\n`,
-  ];
+    `**Urutan Peringkat Alternatif:**\n`,
+  );
 
   allAlts.forEach((alt, idx) => {
+    const kapasitasNote =
+      alt.kapasitas > 0 ? ` | Kapasitas: ${alt.kapasitas}` : "";
+    const pilihanMarker =
+      pilihanUtama && alt.nama === pilihanUtama.nama ? " Pilihan utama" : "";
     narrativeParts.push(
-      `${idx + 1}. ${alt.nama} (Q = ${alt.q}, S = ${alt.s}, R = ${alt.r})\n`,
+      `${idx + 1}. ${alt.nama} (Q=${alt.q}, S=${alt.s}, R=${alt.r}, Jarak=${alt.jarak}km${kapasitasNote})${pilihanMarker}\n`,
     );
   });
 
-  narrativeParts.push(
-    `\nDengan demikian, ${bestAlt.nama} merupakan pilihan terbaik yang mengakomodasi `,
-    `keseimbangan antara potensi akademik siswa dan faktor operasional seperti jarak tempuh `,
-    `dari domisili ke lokasi magang.`,
-  );
+  if (bestAlt.dipindahkan) {
+    narrativeParts.push(
+      `\n**Kesimpulan:** Meskipun ${pilihanUtama?.nama || bestAlt.pilihanUtama} adalah pilihan optimal berdasarkan VIKOR, `,
+      `${bestAlt.nama} dipilih karena masih memiliki kapasitas dan merupakan alternatif terbaik berikutnya.`,
+    );
+  } else {
+    narrativeParts.push(
+      `\nDengan demikian, ${bestAlt.nama} merupakan pilihan terbaik yang mengakomodasi `,
+      `keseimbangan antara potensi akademik siswa dan faktor operasional seperti jarak tempuh `,
+      `dari domisili ke lokasi magang serta ketersediaan kuota.`,
+    );
+  }
 
   return narrativeParts.join("");
 }
 
-function getDisqualificationReason(student, threshold) {
+function getDisqualificationReason(student, thresholdC1, thresholdC4) {
   const reasons = [];
-  if (student.c1 < threshold) {
+  if (student.c1 < thresholdC1) {
     reasons.push(
-      `Akumulasi Nilai (C1 = ${student.c1}) di bawah batas minimum ${threshold}`,
+      `Akumulasi Nilai (C1 = ${student.c1}) di bawah batas minimum ${thresholdC1}`,
     );
   }
-  if (student.c4 < threshold) {
+  if (student.c4 < thresholdC4) {
     reasons.push(
-      `Nilai Sertifikasi (C4 = ${student.c4}) di bawah batas minimum ${threshold}`,
+      `Nilai Sertifikasi (C4 = ${student.c4}) di bawah batas minimum ${thresholdC4}`,
     );
   }
   return reasons.join("; ");
@@ -325,7 +454,7 @@ export function validateStudentData(students) {
 
 export function validateAlternativesData(alternatives) {
   const errors = [];
-  const requiredFields = ["kode", "nama", "jarak"];
+  const requiredFields = ["kode", "nama"];
 
   alternatives.forEach((alt, idx) => {
     requiredFields.forEach((field) => {
@@ -340,9 +469,20 @@ export function validateAlternativesData(alternatives) {
       }
     });
 
-    const jarak = parseFloat(alt.jarak);
-    if (isNaN(jarak) || jarak < 0) {
-      errors.push(`Alternatif baris ${idx + 1}: Jarak harus angka positif`);
+    if (alt.jarak !== undefined) {
+      const jarak = parseFloat(alt.jarak);
+      if (isNaN(jarak) || jarak < 0) {
+        errors.push(`Alternatif baris ${idx + 1}: Jarak harus angka positif`);
+      }
+    }
+
+    if (alt.kapasitas !== undefined) {
+      const kapasitas = parseInt(alt.kapasitas);
+      if (isNaN(kapasitas) || kapasitas < 0) {
+        errors.push(
+          `Alternatif baris ${idx + 1}: Kapasitas harus angka positif`,
+        );
+      }
     }
   });
 

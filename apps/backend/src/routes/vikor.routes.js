@@ -22,6 +22,7 @@ import {
 import {
   fetchKriteriaData,
   fetchJarakData,
+  fetchKapasitasData,
   fetchCompleteData,
   validateConnection,
 } from "../services/googleSheets.service.js";
@@ -253,13 +254,29 @@ router.get(
       "Penilaian Sikap (C2)": result.siswa.c2,
       "Nilai Sertifikasi (C4)": result.siswa.c4,
       "Rekomendasi Guru (C5)": result.siswa.c5,
+      "Skor Keseluruhan": result.overallScore
+        ? result.overallScore.toFixed(2)
+        : "-",
+      "Pilihan Utama (VIKOR)":
+        result.pilihanUtama?.nama || result.rekomendasi?.pilihanUtama || "-",
       "Rekomendasi DUDI": result.rekomendasi.nama,
+      "Status Penempatan": result.rekomendasi.dipindahkan
+        ? "Dipindahkan"
+        : "Pilihan Utama",
+      "Alasan Pindah": result.rekomendasi.alasanPindah || "-",
       "Kode DUDI": result.rekomendasi.kode,
       "Jarak (km)": result.rekomendasi.jarak,
       "Nilai S": result.rekomendasi.s,
       "Nilai R": result.rekomendasi.r,
       "Nilai Q": result.rekomendasi.q,
       Ranking: result.rekomendasi.ranking,
+      "Kapasitas Total":
+        result.rekomendasi.kapasitasInfo?.totalKapasitas || "-",
+      "Slot Terpakai": result.rekomendasi.kapasitasInfo?.terpakai || "-",
+      "Slot Tersedia": result.rekomendasi.kapasitasInfo?.sisaTersedia ?? "-",
+      "Status Kapasitas": result.rekomendasi.kapasitasInfo?.overKapasitas
+        ? "OVER KAPASITAS"
+        : "OK",
     }));
 
     lastCalculationResult.disqualifiedStudents.forEach((student) => {
@@ -269,6 +286,7 @@ router.get(
         "Penilaian Sikap (C2)": "-",
         "Nilai Sertifikasi (C4)": student.c4,
         "Rekomendasi Guru (C5)": "-",
+        "Skor Keseluruhan": "-",
         "Rekomendasi DUDI": "TIDAK LOLOS",
         "Kode DUDI": "-",
         "Jarak (km)": "-",
@@ -276,6 +294,10 @@ router.get(
         "Nilai R": "-",
         "Nilai Q": "-",
         Ranking: "-",
+        "Kapasitas Total": "-",
+        "Slot Terpakai": "-",
+        "Slot Tersedia": "-",
+        "Status Kapasitas": "-",
         Keterangan: student.reason,
       });
     });
@@ -297,23 +319,42 @@ router.get(
 );
 
 router.get("/default-data", (req, res) => {
+  const thresholdC1 =
+    parseFloat(process.env.MIN_THRESHOLD_C1) ||
+    parseFloat(process.env.MIN_THRESHOLD) ||
+    75;
+  const thresholdC4 =
+    parseFloat(process.env.MIN_THRESHOLD_C4) ||
+    parseFloat(process.env.MIN_THRESHOLD) ||
+    80;
+
   const sampleStudents = [
     { nama: "Ahmad Rizki", c1: 85, c2: 80, c4: 78, c5: 82 },
     { nama: "Siti Nurhaliza", c1: 90, c2: 85, c4: 88, c5: 90 },
-    { nama: "Budi Santoso", c1: 75, c2: 78, c4: 72, c5: 75 },
+    { nama: "Budi Santoso", c1: 75, c2: 78, c4: 76, c5: 75 }, // C4 >= 75
     { nama: "Dewi Lestari", c1: 82, c2: 88, c4: 80, c5: 85 },
-    { nama: "Eko Prasetyo", c1: 65, c2: 70, c4: 68, c5: 72 }, // Not qualified
+    { nama: "Eko Prasetyo", c1: 65, c2: 70, c4: 68, c5: 72 }, // Not qualified (C1 < 70, C4 < 75)
     { nama: "Fajar Ramadhan", c1: 88, c2: 82, c4: 85, c5: 80 },
-    { nama: "Gita Pertiwi", c1: 78, c2: 75, c4: 76, c5: 78 },
+    { nama: "Gita Pertiwi", c1: 78, c2: 75, c4: 74, c5: 78 }, // Not qualified (C4 < 75)
     { nama: "Hendra Wijaya", c1: 92, c2: 90, c4: 95, c5: 88 },
   ];
 
   const sampleAlternatives = [
-    { kode: "A1", nama: "Bank BJB Syariah KC Jakarta (Soepomo)", jarak: 5.2 },
-    { kode: "A2", nama: "Bank Jakarta KCP Matraman", jarak: 3.8 },
-    { kode: "A3", nama: "Bank BRI KCP Saharjo", jarak: 4.5 },
-    { kode: "A4", nama: "Bank Mandiri KCP Jatinegara", jarak: 6.1 },
-    { kode: "A5", nama: "Bank BNI KCP Tebet", jarak: 2.9 },
+    {
+      kode: "A1",
+      nama: "Bank BJB Syariah KC Jakarta (Soepomo)",
+      jarak: 5.2,
+      kapasitas: 3,
+    },
+    { kode: "A2", nama: "Bank Jakarta KCP Matraman", jarak: 3.8, kapasitas: 2 },
+    { kode: "A3", nama: "Bank BRI KCP Saharjo", jarak: 4.5, kapasitas: 4 },
+    {
+      kode: "A4",
+      nama: "Bank Mandiri KCP Jatinegara",
+      jarak: 6.1,
+      kapasitas: 3,
+    },
+    { kode: "A5", nama: "Bank BNI KCP Tebet", jarak: 2.9, kapasitas: 2 },
   ];
 
   const defaultWeights = {
@@ -334,7 +375,10 @@ router.get("/default-data", (req, res) => {
       students: sampleStudents,
       alternatives: sampleAlternatives,
       weights: defaultWeights,
-      threshold: parseInt(process.env.MIN_THRESHOLD) || 70,
+      thresholds: {
+        c1: thresholdC1,
+        c4: thresholdC4,
+      },
     },
   });
 });
@@ -384,6 +428,26 @@ router.get(
   }),
 );
 
+/**
+ * NEW ENDPOINT: Fetch Kapasitas (capacity) data from Google Sheets
+ * Sheet structure: B2:B6 = Bank names, C2:C6 = Capacity per bank
+ */
+router.get(
+  "/sheets/kapasitas",
+  asyncHandler(async (req, res) => {
+    const { sheetId } = req.query;
+
+    const result = await fetchKapasitasData(sheetId);
+
+    res.json({
+      success: result.success,
+      data: result.data,
+      rowCount: result.rowCount,
+      error: result.error || null,
+    });
+  }),
+);
+
 router.get(
   "/sheets/complete",
   asyncHandler(async (req, res) => {
@@ -405,7 +469,8 @@ router.post(
     const { sheetId, weights, vParameter = 0.5 } = req.body;
 
     const sheetsData = await fetchCompleteData(sheetId);
-    const { students, alternatives, jarakPerSiswa } = sheetsData.data;
+    const { students, alternatives, jarakPerSiswa, kapasitasPerBank } =
+      sheetsData.data;
 
     if (!students || students.length === 0) {
       throw new ApiError(400, "Data siswa dari spreadsheet kosong");
@@ -469,6 +534,8 @@ router.post(
           studentCount: students.length,
           alternativeCount: alternatives.length,
           alternatives: alternatives,
+          kapasitasPerBank,
+          hasKapasitasData: sheetsData.metadata.hasKapasitasData,
         },
       },
       timestamp: new Date().toISOString(),
@@ -484,11 +551,22 @@ function generateSummary(result) {
     dudiDistribution[dudiName] = (dudiDistribution[dudiName] || 0) + 1;
   });
 
+  // Get thresholds for summary
+  const thresholdC1 =
+    parseFloat(process.env.MIN_THRESHOLD_C1) ||
+    parseFloat(process.env.MIN_THRESHOLD) ||
+    70;
+  const thresholdC4 =
+    parseFloat(process.env.MIN_THRESHOLD_C4) ||
+    parseFloat(process.env.MIN_THRESHOLD) ||
+    75;
+
   return {
     totalSiswa: result.metadata.totalStudents,
     siswaLolos: result.metadata.qualifiedCount,
     siswaTidakLolos: result.metadata.disqualifiedCount,
     distribusiDUDI: dudiDistribution,
+    kapasitasSummary: result.kapasitasSummary || [],
     bobotKriteria: result.metadata.weights.map((w, i) => ({
       kriteria: [
         "C1: Akumulasi Nilai",
@@ -500,7 +578,10 @@ function generateSummary(result) {
       bobot: w,
       persentase: `${(w * 100).toFixed(0)}%`,
     })),
-    batasMinimum: result.metadata.threshold,
+    batasMinimum: {
+      c1: result.metadata.thresholds?.c1 || thresholdC1,
+      c4: result.metadata.thresholds?.c4 || thresholdC4,
+    },
     parameterV: result.metadata.vParameter,
   };
 }

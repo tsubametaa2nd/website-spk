@@ -249,7 +249,7 @@ export function validateUploadFile(file: File): {
   error?: string;
 } {
   const allowedExtensions = [".csv", ".xls", ".xlsx"];
-  const maxSize = 5 * 1024 * 1024; // 5MB
+  const maxSize = 5 * 1024 * 1024;
 
   const ext = `.${file.name.split(".").pop()?.toLowerCase()}`;
 

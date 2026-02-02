@@ -91,9 +91,9 @@ function renderStudentPreview() {
         (s) =>
           `<tr>
         <td>${s.nama}</td>
-        <td class="${s.c1 < 70 ? "text-error-500 font-medium" : ""}">${s.c1}</td>
+        <td class="${s.c1 < 75 ? "text-error-500 font-medium" : ""}">${s.c1}</td>
         <td>${s.c2}</td>
-        <td class="${s.c4 < 70 ? "text-error-500 font-medium" : ""}">${s.c4}</td>
+        <td class="${s.c4 < 80 ? "text-error-500 font-medium" : ""}">${s.c4}</td>
         <td>${s.c5}</td>
       </tr>`,
       )
@@ -103,8 +103,8 @@ function renderStudentPreview() {
   document.getElementById("student-preview")?.classList.remove("hidden");
 
   const countEl = document.getElementById("student-count");
-  const lowC1 = AppState.studentData.filter((s) => s.c1 < 70).length;
-  const lowC4 = AppState.studentData.filter((s) => s.c4 < 70).length;
+  const lowC1 = AppState.studentData.filter((s) => s.c1 < 75).length;
+  const lowC4 = AppState.studentData.filter((s) => s.c4 < 80).length;
 
   if (countEl) {
     let message = `${AppState.studentData.length} siswa dimuat`;
@@ -131,8 +131,6 @@ function renderDudiPreview() {
   }
   document.getElementById("dudi-preview")?.classList.remove("hidden");
 }
-
-// API Handlers
 
 async function uploadFile(inputId, type) {
   const input = document.getElementById(inputId);
@@ -168,7 +166,6 @@ async function uploadFile(inputId, type) {
   }
 }
 
-// VIKOR Processing
 async function processVikor() {
   if (!AppState.validateWeights()) {
     showError("Total bobot harus sama dengan 1.00");
@@ -183,13 +180,11 @@ async function processVikor() {
     if (btn) btn.disabled = true;
     if (btnText) btnText.textContent = "Memproses...";
 
-    // Check if we have Google Sheets data with individual distances
     const hasJarakPerSiswa =
       window.JarakPerSiswa && Object.keys(window.JarakPerSiswa).length > 0;
 
     let res;
     if (hasJarakPerSiswa && window.GoogleSheetId) {
-      // Use the dedicated sheets endpoint that handles individual distances
       res = await fetch(`${API_URL}/api/process-vikor-sheets`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -199,7 +194,6 @@ async function processVikor() {
         }),
       });
     } else {
-      // Use the standard endpoint
       res = await fetch(`${API_URL}/api/process-vikor`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -207,7 +201,6 @@ async function processVikor() {
           students: AppState.studentData,
           alternatives: AppState.dudiData,
           weights: AppState.getWeights(),
-          // Include jarakPerSiswa if available from frontend state
           jarakPerSiswa: window.JarakPerSiswa || null,
         }),
       });
@@ -234,7 +227,6 @@ async function processVikor() {
   }
 }
 
-// Results Rendering
 function renderResults() {
   const results = AppState.vikorResults;
   if (!results) return;
@@ -248,7 +240,6 @@ function renderResults() {
     results.metadata.disqualifiedCount;
   document.getElementById("stat-dudi").textContent = AppState.dudiData.length;
 
-  // Render results table
   const tbody = document.querySelector("#results-table tbody");
   if (tbody) {
     tbody.innerHTML = results.qualifiedResults
@@ -270,7 +261,6 @@ function renderResults() {
       .join("");
   }
 
-  // Render disqualified
   if (results.disqualifiedStudents.length > 0) {
     document.getElementById("disqualified-section")?.classList.remove("hidden");
     const dqTbody = document.querySelector("#disqualified-table tbody");
@@ -281,8 +271,8 @@ function renderResults() {
         <tr>
           <td>${i + 1}</td>
           <td class="font-medium">${s.nama}</td>
-          <td class="${s.c1 < 70 ? "text-error-500 font-medium" : ""}">${s.c1}</td>
-          <td class="${s.c4 < 70 ? "text-error-500 font-medium" : ""}">${s.c4}</td>
+          <td class="${s.c1 < 75 ? "text-error-500 font-medium" : ""}">${s.c1}</td>
+          <td class="${s.c4 < 80 ? "text-error-500 font-medium" : ""}">${s.c4}</td>
           <td class="text-error-500 text-sm">${s.reason}</td>
         </tr>
       `,

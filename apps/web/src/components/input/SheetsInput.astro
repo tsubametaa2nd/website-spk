@@ -64,12 +64,17 @@ const { id = 'sheets-input' } = Astro.props;
         <div class="p-2 bg-white rounded border border-blue-100">
           <strong class="text-blue-800">Sheet "Kriteria":</strong>
           <code class="block mt-1 text-xs">No | Nama | C1 | C2 | C3 | C4 | C5</code>
-          <span class="text-xs text-blue-500">C1: Akumulasi Nilai, C2: Sikap, C4: Sertifikasi, C5: Rekomendasi</span>
+          <span class="text-xs text-blue-500">C1: Akumulasi Nilai (min. 75), C2: Sikap, C4: Sertifikasi (min. 75), C5: Rekomendasi</span>
         </div>
         <div class="p-2 bg-white rounded border border-blue-100">
           <strong class="text-blue-800">Sheet "Jarak":</strong>
           <code class="block mt-1 text-xs">No | Nama | Bank 1 | Bank 2 | Bank 3 | ...</code>
           <span class="text-xs text-blue-500">Jarak masing-masing siswa ke setiap bank/tempat magang (dalam KM)</span>
+        </div>
+        <div class="p-2 bg-white rounded border border-blue-100">
+          <strong class="text-blue-800">Sheet "Kapasitas" :</strong>
+          <code class="block mt-1 text-xs">B2:B6 = Nama Bank | C2:C6 = Kapasitas Siswa</code>
+          <span class="text-xs text-blue-500">Kapasitas/kuota siswa yang bisa ditampung oleh masing-masing tempat magang</span>
         </div>
       </div>
     </div>
@@ -85,10 +90,11 @@ const { id = 'sheets-input' } = Astro.props;
           <thead>
             <tr>
               <th>Nama</th>
-              <th>C1</th>
+              <th>C1 (min 75)</th>
               <th>C2</th>
-              <th>C4</th>
+              <th>C4 (min 80)</th>
               <th>C5</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -96,19 +102,31 @@ const { id = 'sheets-input' } = Astro.props;
       </div>
     </div>
     
-    <div>
-      <h5 class="text-sm font-medium text-secondary-600 mb-2">Alternatif (Tempat Magang)</h5>
+    <div class="mb-4">
+      <h5 class="text-sm font-medium text-secondary-600 mb-2">Alternatif (Tempat Magang) & Kapasitas</h5>
       <div class="table-container max-h-48 overflow-y-auto">
         <table class="table" id="sheets-alt-table">
           <thead>
             <tr>
               <th>Kode</th>
               <th>Nama Bank/Tempat</th>
+              <th>Kapasitas</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
       </div>
+    </div>
+    
+    <div id="sheets-capacity-summary" class="hidden mb-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-200">
+      <h5 class="text-sm font-semibold text-indigo-800 mb-2 flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        Ringkasan Kapasitas
+      </h5>
+      <div id="capacity-bars" class="space-y-2"></div>
     </div>
     
     <p id="sheets-count" class="text-sm text-secondary-500 mt-2"></p>
@@ -151,7 +169,7 @@ const { id = 'sheets-input' } = Astro.props;
         const data = await res.json();
         
         if (data.success) {
-          const { spreadsheetTitle, hasKriteria, hasJarak, sheets } = data.data;
+          const { spreadsheetTitle, hasKriteria, hasJarak, hasKapasitas, sheets } = data.data;
           
           let statusHtml = `
             <div class="flex items-center gap-2 mb-2">
@@ -166,10 +184,31 @@ const { id = 'sheets-input' } = Astro.props;
           
           sheets.forEach((sheet: string) => {
             const isRequired = sheet === 'Kriteria' || sheet === 'Jarak';
-            const isPresent = (sheet === 'Kriteria' && hasKriteria) || (sheet === 'Jarak' && hasJarak);
+            const isOptional = sheet === 'Kapasitas';
+            let isPresent = false;
+            let displayClass = 'bg-secondary-100 text-secondary-600';
+            let checkmark = '';
+            
+            if (sheet === 'Kriteria' && hasKriteria) {
+              isPresent = true;
+              displayClass = 'bg-success-100 text-success-700';
+              checkmark = '✓';
+            } else if (sheet === 'Jarak' && hasJarak) {
+              isPresent = true;
+              displayClass = 'bg-success-100 text-success-700';
+              checkmark = '✓';
+            } else if (sheet === 'Kapasitas' && hasKapasitas) {
+              isPresent = true;
+              displayClass = 'bg-success-100 text-success-700';
+              checkmark = '✓';
+            } else if (isRequired) {
+              displayClass = 'bg-error-100 text-error-700';
+              checkmark = '✗';
+            }
+            
             statusHtml += `
-              <span class="px-2 py-1 text-xs rounded-full ${isRequired ? (isPresent ? 'bg-success-100 text-success-700' : 'bg-error-100 text-error-700') : 'bg-secondary-100 text-secondary-600'}">
-                ${sheet} ${isRequired ? (isPresent ? '✓' : '✗') : ''}
+              <span class="px-2 py-1 text-xs rounded-full ${displayClass}">
+                ${sheet} ${checkmark}
               </span>
             `;
           });
@@ -179,7 +218,15 @@ const { id = 'sheets-input' } = Astro.props;
           if (!hasKriteria || !hasJarak) {
             statusHtml += `
               <div class="mt-3 p-2 bg-warning-50 rounded text-sm text-warning-700">
-                Pastikan spreadsheet memiliki sheet bernama "Kriteria" dan "Jarak"
+                ⚠️ Pastikan spreadsheet memiliki sheet bernama "Kriteria" dan "Jarak"
+              </div>
+            `;
+          }
+          
+          if (!hasKapasitas) {
+            statusHtml += `
+              <div class="mt-3 p-2 bg-blue-50 rounded text-sm text-blue-700">
+                ℹ️ Sheet "Kapasitas" tidak ditemukan. Kapasitas akan diset unlimited untuk semua tempat magang.
               </div>
             `;
           }
@@ -220,8 +267,9 @@ const { id = 'sheets-input' } = Astro.props;
         }
         
         const { students, alternatives } = completeData.data;
+        const hasKapasitasData = completeData.metadata?.hasKapasitasData || false;
         
-        renderSheetsPreview(students, alternatives);
+        renderSheetsPreview(students, alternatives, hasKapasitasData);
         
         if (window.AppState) {
           window.AppState.setStudentData(students);
@@ -271,43 +319,114 @@ const { id = 'sheets-input' } = Astro.props;
       }
     }
     
-    function renderSheetsPreview(students: any[], alternatives: any[]) {
+    function renderSheetsPreview(students: any[], alternatives: any[], hasKapasitasData: boolean = false) {
+      const THRESHOLD_C1 = 75;
+      const THRESHOLD_C4 = 80;
+      
       const studentTbody = document.querySelector('#sheets-student-table tbody');
       if (studentTbody) {
-        studentTbody.innerHTML = students.slice(0, 10).map(s => `
-          <tr>
-            <td>${s.nama}</td>
-            <td class="${s.c1 < 70 ? 'text-error-500 font-medium' : ''}">${s.c1}</td>
-            <td>${s.c2}</td>
-            <td class="${s.c4 < 70 ? 'text-error-500 font-medium' : ''}">${s.c4}</td>
-            <td>${s.c5}</td>
-          </tr>
-        `).join('');
+        studentTbody.innerHTML = students.slice(0, 10).map(s => {
+          const isQualified = s.c1 >= THRESHOLD_C1 && s.c4 >= THRESHOLD_C4;
+          const statusBadge = isQualified 
+            ? '<span class="px-2 py-0.5 text-xs rounded-full bg-success-100 text-success-700">✓ Lolos</span>'
+            : '<span class="px-2 py-0.5 text-xs rounded-full bg-error-100 text-error-700">✗ Tidak Lolos</span>';
+          
+          return `
+            <tr class="${!isQualified ? 'bg-error-50/30' : ''}">
+              <td>${s.nama}</td>
+              <td class="${s.c1 < THRESHOLD_C1 ? 'text-error-500 font-medium' : 'text-success-600'}">${s.c1}</td>
+              <td>${s.c2}</td>
+              <td class="${s.c4 < THRESHOLD_C4 ? 'text-error-500 font-medium' : 'text-success-600'}">${s.c4}</td>
+              <td>${s.c5}</td>
+              <td>${statusBadge}</td>
+            </tr>
+          `;
+        }).join('');
         
         if (students.length > 10) {
-          studentTbody.innerHTML += `<tr><td colspan="5" class="text-center text-secondary-400">...dan ${students.length - 10} siswa lainnya</td></tr>`;
+          studentTbody.innerHTML += `<tr><td colspan="6" class="text-center text-secondary-400">...dan ${students.length - 10} siswa lainnya</td></tr>`;
         }
       }
       
       const altTbody = document.querySelector('#sheets-alt-table tbody');
       if (altTbody) {
-        altTbody.innerHTML = alternatives.map(a => `
-          <tr>
-            <td class="font-mono font-medium">${a.kode}</td>
-            <td>${a.nama}</td>
-          </tr>
-        `).join('');
+        const totalKapasitas = alternatives.reduce((sum, a) => sum + (a.kapasitas || 0), 0);
+        
+        altTbody.innerHTML = alternatives.map(a => {
+          const kapasitas = a.kapasitas || 0;
+          const hasKapasitas = kapasitas > 0;
+          const statusBadge = hasKapasitas
+            ? `<span class="px-2 py-0.5 text-xs rounded-full bg-success-100 text-success-700">${kapasitas} slot</span>`
+            : '<span class="px-2 py-0.5 text-xs rounded-full bg-secondary-100 text-secondary-600">∞ Unlimited</span>';
+          
+          return `
+            <tr>
+              <td class="font-mono font-medium">${a.kode}</td>
+              <td>${a.nama}</td>
+              <td class="font-semibold ${hasKapasitas ? 'text-indigo-600' : 'text-secondary-400'}">${hasKapasitas ? kapasitas + ' siswa' : '-'}</td>
+              <td>${statusBadge}</td>
+            </tr>
+          `;
+        }).join('');
+        
+        // Show capacity summary if data exists
+        const capacitySummary = document.getElementById('sheets-capacity-summary');
+        const capacityBars = document.getElementById('capacity-bars');
+        
+        if (hasKapasitasData && totalKapasitas > 0 && capacitySummary && capacityBars) {
+          capacitySummary.classList.remove('hidden');
+          
+          const qualifiedCount = students.filter(s => s.c1 >= THRESHOLD_C1 && s.c4 >= THRESHOLD_C4).length;
+          const overflowStatus = qualifiedCount > totalKapasitas 
+            ? `<span class="text-warning-600">⚠️ Kelebihan ${qualifiedCount - totalKapasitas} siswa</span>`
+            : `<span class="text-success-600">✓ Cukup untuk semua siswa yang lolos</span>`;
+          
+          capacityBars.innerHTML = `
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-secondary-600">Total Kapasitas:</span>
+              <span class="font-bold text-indigo-700">${totalKapasitas} siswa</span>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-secondary-600">Siswa yang Lolos:</span>
+              <span class="font-bold text-green-700">${qualifiedCount} siswa</span>
+            </div>
+            <div class="flex justify-between items-center text-sm mt-2 pt-2 border-t border-indigo-200">
+              <span class="text-secondary-600">Status:</span>
+              ${overflowStatus}
+            </div>
+            <div class="mt-3 space-y-1">
+              ${alternatives.map(a => {
+                const kap = a.kapasitas || 0;
+                if (kap === 0) return '';
+                const percentage = Math.min(100, (kap / totalKapasitas) * 100);
+                return `
+                  <div class="flex items-center gap-2 text-xs">
+                    <span class="w-32 truncate text-secondary-600">${a.nama.substring(0, 20)}...</span>
+                    <div class="flex-1 h-2 bg-secondary-200 rounded-full overflow-hidden">
+                      <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" style="width: ${percentage}%"></div>
+                    </div>
+                    <span class="w-12 text-right font-medium text-indigo-700">${kap}</span>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `;
+        } else if (capacitySummary) {
+          capacitySummary.classList.add('hidden');
+        }
       }
       
       previewDiv?.classList.remove('hidden');
       
       const countEl = document.getElementById('sheets-count');
       if (countEl) {
-        const lowC1 = students.filter(s => s.c1 < 70).length;
-        const lowC4 = students.filter(s => s.c4 < 70).length;
-        let message = `${students.length} siswa, ${alternatives.length} alternatif dimuat`;
-        if (lowC1 > 0 || lowC4 > 0) {
-          message += ` (${lowC1 + lowC4} siswa di bawah batas minimum)`;
+        const qualifiedCount = students.filter(s => s.c1 >= THRESHOLD_C1 && s.c4 >= THRESHOLD_C4).length;
+        const disqualifiedCount = students.length - qualifiedCount;
+        const totalKapasitas = alternatives.reduce((sum, a) => sum + (a.kapasitas || 0), 0);
+        
+        let message = `${students.length} siswa (${qualifiedCount} lolos, ${disqualifiedCount} tidak lolos), ${alternatives.length} alternatif`;
+        if (totalKapasitas > 0) {
+          message += `, total kapasitas: ${totalKapasitas} slot`;
         }
         countEl.textContent = message;
       }

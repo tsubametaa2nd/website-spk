@@ -1,6 +1,6 @@
 export const API_CONFIG = {
   BASE_URL:
-    import.meta.env.PUBLIC_API_URL || "https://website-spk-backend.vercel.app",
+    import.meta.env.PUBLIC_API_URL || "https://website-spk-backend.vercel.app/",
 
   TIMEOUT: 30000,
 
